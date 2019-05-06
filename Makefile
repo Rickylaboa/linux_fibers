@@ -1,15 +1,18 @@
 obj-m += module/fiber.o
 
 all:
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+	sudo make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+	sudo insmod module/fiber.ko
 	gcc -pthread -o usertest_1 user/usertest_1.c
 
 clean:
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
+	sudo make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 	sudo rmmod fiber
-	sudo dmesg -C
 
-ins:
+remove:
+	sudo rmmod fiber
+	
+insert:
 	sudo insmod module/fiber.ko
 
 test:
