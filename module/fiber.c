@@ -52,6 +52,19 @@ static int hit_release(struct inode *inode, struct file *file){    // to do...
 
 static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long ptr){
 
-  printk(KERN_INFO "%s: hitting device with command %d\n", NAME, cmd);
-  return cmd;
+	switch(cmd)
+	{
+		case IOCTL_CONVERT:
+			printk(KERN_INFO "%s: CONVERT\n", NAME);
+			return 0;
+		case IOCTL_CREATE:
+			printk(KERN_INFO "%s: CREATE\n", NAME);
+			return 0;
+		case IOCTL_SWITCH:
+			printk(KERN_INFO "%s: SWITCH\n", NAME);
+			return 0;
+		default:
+			return 0;		
+	}
+  
 }
