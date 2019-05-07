@@ -19,7 +19,7 @@ pthread_t threads[NUM_THREADS];
 
 void slave4(void* arg)
 {
-  printf("{Fiber 4 begin [%ld]}\n",((intptr_t) arg));
+  printf("{Fiber 4 begin [%ld]}\n",((long int) arg));
   printf("{Fiber 4: switching from %d to %d}\n",nextFiber4,nextFiber2);
   printf("{Fiber 4: end!}\n");
   ret4=1;
@@ -34,7 +34,7 @@ int all_done()
 
 void slave3(void* arg)
 {
-  printf("{Fiber 3 begin [%ld]}\n",((intptr_t) arg));
+  printf("{Fiber 3 begin [%ld]}\n",((long int) arg));
   printf("{Fiber 3 end ... }\n");
   ret3=1;
   switch_to_fiber(nextFiber1);
@@ -42,7 +42,7 @@ void slave3(void* arg)
 
 void slave2(void* arg)
 {
-  printf("{Fiber 2 begin [%ld]}\n",((intptr_t) arg));
+  printf("{Fiber 2 begin [%ld]}\n",((long int) arg));
   void (*foo)(void*)=(void*)(slave4);
   nextFiber4= create_fiber(2<<12,foo,(void*)3);
   switch_to_fiber(nextFiber4);
@@ -59,7 +59,7 @@ void slave2(void* arg)
 
 void slave1(void* arg)
 {
-  printf("{Fiber 1 begin [%ld]}\n",((intptr_t) arg));
+  printf("{Fiber 1 begin [%ld]}\n",((long int) arg));
   void (*foo)(void*)=(void*)(slave3);
   nextFiber3= create_fiber(2<<12,foo,(void*)3);
   switch_to_fiber(nextFiber3);

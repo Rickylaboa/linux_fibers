@@ -15,9 +15,10 @@ extern struct fiber_struct* init_fiber(int status,int tid,int pid_running,long i
 }
 
 extern int add_fiber(struct fiber_struct* f){ // TO MODIFY
+    return 0;
 }
 
 
 extern int remove_fiber(long index){ // TO MODIFY
-
+    return 0;
 }
