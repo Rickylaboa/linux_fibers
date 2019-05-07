@@ -20,7 +20,8 @@
 
 struct fiber_struct{
     int status;
-    int pid;
+    int tid;
+    int pid_running;
     long index;
     struct pt_regs registers;
 };
@@ -30,10 +31,8 @@ struct fiber_list{
     struct fiber_list* next;
 };
 
-static struct fiber_list *list_f; // TO REMOVE WITH HASHMAP
-static spinlock_t list_lock = __SPIN_LOCK_UNLOCKED(list_lock); // TO REMOVE WITH HASHMAP
 
-extern struct fiber_struct* init_fiber(int status,int pid,long index,struct pt_regs regs);
+extern struct fiber_struct* init_fiber(int status,int pid, int pid_running,long index,struct pt_regs regs);
 extern int add_fiber(struct fiber_struct* f);
 extern int remove_fiber(long index);
 extern struct fiber_struct* get_fiber(long index);

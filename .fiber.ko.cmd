@@ -1,0 +1,1 @@
+cmd_/home/riccardo/Desktop/linux_fibers/fiber.ko := ld -r -m elf_i386 -T ./scripts/module-common.lds  --build-id  -o /home/riccardo/Desktop/linux_fibers/fiber.ko /home/riccardo/Desktop/linux_fibers/fiber.o /home/riccardo/Desktop/linux_fibers/fiber.mod.o ;  true
