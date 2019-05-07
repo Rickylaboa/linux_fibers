@@ -1,10 +1,11 @@
 #include<linux/miscdevice.h>
 #include<linux/module.h>
 #include<linux/fs.h>
-#include"constant.h"
+#include <fiber_methods.h>
 
 
 #define NAME "fibers"
+
 
 
 int init_module(void);

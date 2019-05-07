@@ -9,7 +9,7 @@
 #define IOCTL_SWITCH _IOW(MAJOR, 1, long)
 #define IOCTL_CREATE _IOW(MAJOR, 2, void *)
 
-struct fiber_info {
+struct fiber_info { // data to copy from user in order to create a new fiber
 
   void *stack;
   void (*routine)(void *);
