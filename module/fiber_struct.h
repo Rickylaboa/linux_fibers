@@ -31,7 +31,6 @@ struct fiber_list{
     struct fiber_list* next;
 };
 
-
 extern struct fiber_struct* init_fiber(int status,int pid, int pid_running,long index,struct pt_regs regs);
 extern int add_fiber(struct fiber_struct* f);
 extern int remove_fiber(long index);
