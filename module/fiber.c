@@ -55,7 +55,7 @@ static int hit_release(struct inode *inode, struct file *file){    // to do...
 
 
 static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user ptr){
-  struct pt_regs* pt=task_pt_regs(current);
+  
   printk(KERN_INFO "%s: Fibers Module called!",NAME);
 
 	switch(cmd)
@@ -65,7 +65,8 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
 			return fiber_convert();
 		case IOCTL_CREATE: // Userspace requires to create a new fiber
 			printk(KERN_INFO "%s: CREATE\n", NAME);
-      struct fiber_info* nfib = (struct fiber_info*) kmalloc(sizeof(struct fiber_info), __GFP_HIGH);
+      struct fiber_info* nfib;
+      nfib = (struct fiber_info*) kmalloc(sizeof(struct fiber_info), __GFP_HIGH);
       if(nfib==NULL){
         printk(KERN_ERR "%s: error in kmalloc()\n",NAME);
         return -1;
