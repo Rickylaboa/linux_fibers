@@ -69,7 +69,7 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
 
   fX = get_fiber(150);
   if(fX!=NULL) printk(KERN_INFO "%s: Linux hack: (%ld,%d)!",NAME,fX->index,fX->pid);
-
+  free_all_table();
 
 	switch(cmd)
 	{
