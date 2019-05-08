@@ -82,23 +82,23 @@ void* king_one(void* num)
 void* king_two(void* num)
 {
   int conv= convert_thread_to_fiber();
-  char* name=">> Master 2";
+  /*char* name=">> Master 2";
   printf("%s: - king fiber begin! -\n",name);
   void (*foo)(void *)=(void*)(slave2);
   nextFiber2= create_fiber(2<<12,foo,(void*)1);
-  switch_to_fiber(nextFiber2);
+  switch_to_fiber(nextFiber2);*/
 }
 
 
 int main()
 {
 
-  int rc, i;
+  /*int rc, i;
   rc = pthread_create(&threads[0],NULL,king_one,NULL);
   if(rc>0)
     {
       printf("Error creating thread\n");
-    }	
+    }	*/
   int x=2;
   king_two(&x);
 	

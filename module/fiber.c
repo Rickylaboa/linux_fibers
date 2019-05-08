@@ -1,8 +1,5 @@
 #include "fiber.h"
 
-
-
-
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Fabio Marra <fab92mar@gmail.com> & Riccardo Valentini <valentiniriccardo05@gmail.com>");
 MODULE_DESCRIPTION("Kernel module implementing Windows fibers on Linux");
@@ -28,7 +25,7 @@ static struct miscdevice mdev = {
 int init_module(void){
 
   int ret = misc_register(&mdev);
-  
+  init_fiber_set();  
   if(ret != 0){
     printk(KERN_ERR "%s: Error in misc_register() function\n", NAME);
   }
@@ -56,7 +53,23 @@ static int hit_release(struct inode *inode, struct file *file){    // to do...
 
 static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user ptr){
   struct fiber_info* nfib;
-  printk(KERN_INFO "%s: Fibers Module called!",NAME);
+  struct pt_regs regs;
+  int i=0,n=1000;
+  struct fiber_struct* f[n];
+  struct fiber_struct* fX;
+
+
+  printk(KERN_INFO "%s: Fibers Module called! Process pid: %d\n",NAME,(current->parent->pid));
+  regs = *task_pt_regs(current);
+  for(i=0; i<n; i++)
+  {
+    f[i]=init_fiber(INACTIVE_FIBER,current->parent->pid,current->pid,i,regs);
+    add_fiber(f[i]);
+  }
+
+  fX = get_fiber(150);
+  if(fX!=NULL) printk(KERN_INFO "%s: Linux hack: (%ld,%d)!",NAME,fX->index,fX->pid);
+
 
 	switch(cmd)
 	{
