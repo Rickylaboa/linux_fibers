@@ -16,6 +16,7 @@
 #include <linux/spinlock.h> // TO REMOVE WHITH HASHMAP
 #include <linux/hashtable.h>
 
+#define FIBER_BKT 8
 #define MAX_DIM 2400
 #define NAME "fibers"
 
@@ -35,7 +36,7 @@ struct fiber_set
 };
 
 struct fiber_hash{
-    DECLARE_HASHTABLE(fiber_table,8);
+    DECLARE_HASHTABLE(fiber_table,FIBER_BKT);
 };
 
 extern void init_fiber_set(void);
@@ -43,3 +44,4 @@ extern struct fiber_struct* init_fiber(int status,int pid, int thread_running,lo
 extern long add_fiber(struct fiber_struct* f);
 extern void remove_fiber(long index);
 extern struct fiber_struct* get_fiber(long index);
+extern void free_all_table(void);
