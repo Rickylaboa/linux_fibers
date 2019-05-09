@@ -70,6 +70,7 @@ extern void init_fiber_set(void);
 extern struct fiber_struct* init_fiber(int status,int pid, int thread_running,long index,struct pt_regs regs);
 extern long add_fiber(struct fiber_struct* f);
 extern int add_thread(int tid,long active_fiber_index);
+extern int set_thread(int tid,long active_fiber_index);
 extern void remove_fiber(long index);
 extern struct fiber_struct* get_fiber(long index);
 extern void free_all_tables(void);

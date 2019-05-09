@@ -149,6 +149,27 @@ extern int add_thread(int tid,long active_fiber_index){
     return 0;
 }
 
+/*  This function sets a new active fiber index in a thread, if it exists
+    into the thread hashtable. It uses a spinlock to access the table and
+    returns 1 on success, 0 on failure*/
+extern int set_thread(int tid,long active_fiber_index){
+    struct thread_set* curr;
+    unsigned long flags;
+    int key;
+    key = current->pid;
+    spin_lock_irqsave(&(tt.tt_lock), flags); // begin of cs
+    hash_for_each_possible(tt.thread_table,curr,list,key){
+        if(curr==NULL) break;
+        if(curr->tid==key){
+            curr->active_fiber_index = active_fiber_index;
+            spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of cs
+            return 1;
+        }
+    }
+    spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of cs
+    return 0;
+}
+
 
 /*  To do! */
 extern void remove_fiber(long index){ // TO MODIFY
