@@ -56,10 +56,11 @@ long create_fiber(size_t stack_size, void (*routine)(void *), void *args){
 
   struct fiber_info f_info = {
 
-    .stack = (void *)(((unsigned long) stack) + stack_size - 8),   //16 byte alignement of the stack
+    .stack = (void **)(((unsigned long) stack) + stack_size - 8),   //16 byte alignement of the stack
     .routine = routine,
     .args = args
   };
+  f_info.stack[1] = args;
 
   long ret = ioctl(fd, IOCTL_CREATE, (unsigned long)&f_info);
   return ret;

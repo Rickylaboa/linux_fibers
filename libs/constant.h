@@ -15,7 +15,7 @@
 
 struct fiber_info {        //useful info to create a fiber
 
-  void *stack;
+  void **stack;
   void (*routine) (void *);
   void *args;
 };

@@ -19,16 +19,15 @@ pthread_t threads[NUM_THREADS];
 
 void slave4(void* arg)
 {
+  register float x;
   printf("{Fiber 4 begin [%ld]}\n",((long int) arg));
   printf("{Fiber 4: end!}\n");
   ret4=1;
-  float x = 3.014f;
-  float e = 5.104235367353;
-  float f = e*x;
-  printf("{Fiber 4 using FPU : %f}\n", f);
+  x = 3.134f;
+  printf("{Fiber 4 using FPU : %f}\n", x);
   switch_to_fiber(nextFiber2);
-  f = e*x;
-  printf("[Fiber 4: exiting %f!}\n",f);
+  printf("{Fiber 4 before exiting FPU: %f}\n", x);
+
   exit(0);
 }
 
@@ -51,9 +50,9 @@ void slave2(void* arg)
   void (*foo)(void*)=(void*)(slave4);
   nextFiber4= create_fiber(2<<12,foo,(void*)3);
   switch_to_fiber(nextFiber4);
-  float e = 3.104f;
-  float x = 103.224552;
-  float f = e*x;
+  register float e = 3.104f;
+  register float x = 103.224552;
+  register float f = e*x;
   printf("{Fiber 2 using FPU : %f}\n", f);
   printf("{Fiber 2 end ...}\n");
   ret2=1;
