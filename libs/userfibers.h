@@ -22,11 +22,9 @@ void open_device(){
 
 
 long convert_thread_to_fiber(){
-
   if(fd == -1 ){
     open_device();
   }
-
   long ret = ioctl(fd, IOCTL_CONVERT, 0);
   return ret;
 }

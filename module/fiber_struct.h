@@ -63,14 +63,14 @@ struct thread_hash{
     DECLARE_HASHTABLE(thread_table,THREAD_BKT);
 };
 
-extern long get_new_index(void);
-extern int is_a_fiber(void);
-extern long current_fiber(void);
+inline long get_new_index(void);
+inline int is_a_fiber(void);
+inline long current_fiber(void);
 extern void init_hashtables(void);
 extern struct fiber_struct* init_fiber(int status,int pid, int thread_running,long index,struct pt_regs regs);
-extern long add_fiber(struct fiber_struct* f);
-extern int add_thread(int tid,long active_fiber_index);
-extern int set_thread(int tid,long active_fiber_index);
+inline long add_fiber(struct fiber_struct* f);
+inline int add_thread(int tid,long active_fiber_index);
+inline int set_thread(int tid,long active_fiber_index);
 extern void remove_fiber(long index);
-extern struct fiber_struct* get_fiber(long index);
+inline struct fiber_struct* get_fiber(long index);
 extern void free_all_tables(void);

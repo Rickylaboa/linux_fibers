@@ -16,7 +16,7 @@ extern void init_hashtables(void){
 }
 
 /*  This function returns 1 if the current thread is a fiber, 0 otherwise.*/
-extern int is_a_fiber(void)
+inline int is_a_fiber(void)
 {
     struct thread_node* curr;
     unsigned long flags;
@@ -36,15 +36,15 @@ extern int is_a_fiber(void)
 
 /*  This function returns the fiber id to the current fiber, if
     the current thread is a fiber, otherwise it returns -1.*/
-extern long current_fiber(void)
+inline long current_fiber(void)
 {
+    struct hlist_node* n;
     struct thread_node* curr;
     unsigned long flags;
     int key;
     key = current->pid;
     spin_lock_irqsave(&(tt.tt_lock), flags); // begin of cs
-    hash_for_each_possible(tt.thread_table,curr,list,key){
-        if(curr==NULL) break;
+    hash_for_each_possible_safe(tt.thread_table,curr,n,list,key){
         if(curr->tid==key){
             long active_fiber_index = curr->active_fiber_index;
             spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of cs
@@ -52,6 +52,7 @@ extern long current_fiber(void)
         }
     }
     spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of cs
+    printk(KERN_ERR "%s: thread %d not found!\n",NAME,key);
     return -1;
 }
 
@@ -59,7 +60,7 @@ extern long current_fiber(void)
     for a new fibers. It uses an hashmap for each process
     using fibers. The key to access this map is the pid of
     the process and there is a spinlock to access the hashtable. */
-extern long get_new_index(void){
+inline long get_new_index(void){
     int key;
     long fresh_index;
 	unsigned long flags;
@@ -114,7 +115,7 @@ extern struct fiber_struct* init_fiber(int status,int pid,int thread_running,lon
 
 /*  This function adds a fiber to the fiber hashtable. It uses a spinlock
     to access the table. */
-extern long add_fiber(struct fiber_struct *f){
+inline long add_fiber(struct fiber_struct *f){
     long long key;
     unsigned long flags;
     struct fiber_node* elem = kmalloc(sizeof(struct fiber_node), __GFP_HIGH);
@@ -132,18 +133,19 @@ extern long add_fiber(struct fiber_struct *f){
 
 /*  This function adds a thread to the thread hashtable. It uses a spinlock
     to access the table. */
-extern int add_thread(int tid,long active_fiber_index){
-    long long key;
+inline int add_thread(int tid,long active_fiber_index){
+    int key;
     unsigned long flags;
     struct thread_node* elem = kmalloc(sizeof(struct fiber_node), __GFP_HIGH);
     if(elem==NULL){
-        printk(KERN_INFO "%s: error in kmalloc()\n",NAME);
+        printk(KERN_ERR "%s: error in kmalloc()\n",NAME);
         return -1;
     }
     elem->tid =  tid;
     elem->active_fiber_index = active_fiber_index;
     key = tid;
 	spin_lock_irqsave(&(tt.tt_lock), flags); // begin of cs
+    printk(KERN_DEBUG "%s: adding thread %d\n",NAME,tid);
     hash_add(tt.thread_table,&(elem->list),key);
     spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of cs
     return 0;
@@ -152,15 +154,17 @@ extern int add_thread(int tid,long active_fiber_index){
 /*  This function sets a new active fiber index in a thread, if it exists
     into the thread hashtable. It uses a spinlock to access the table and
     returns 1 on success, 0 on failure*/
-extern int set_thread(int tid,long active_fiber_index){
+inline int set_thread(int tid,long active_fiber_index){
     struct thread_node* curr;
+    struct hlist_node* n;
     unsigned long flags;
     int key;
     key = current->pid;
     spin_lock_irqsave(&(tt.tt_lock), flags); // begin of cs
-    hash_for_each_possible(tt.thread_table,curr,list,key){
+    hash_for_each_possible_safe(tt.thread_table,curr,n,list,key){
         if(curr==NULL) break;
         if(curr->tid==key){
+            printk(KERN_DEBUG "%s: setting thread %d\n",NAME,curr->tid);
             curr->active_fiber_index = active_fiber_index;
             spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of cs
             return 1;
@@ -178,7 +182,7 @@ extern void remove_fiber(long index){ // TO MODIFY
 
 /*  This functions retrieves a fiber by index into the
     fiber hashtable. It uses a spinlock to access the table. */
-extern struct fiber_struct* get_fiber(long index){
+inline struct fiber_struct* get_fiber(long index){
 
     long long key;
     unsigned long flags;
