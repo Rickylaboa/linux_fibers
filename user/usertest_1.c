@@ -22,8 +22,14 @@ void slave4(void* arg)
   printf("{Fiber 4 begin [%ld]}\n",((long int) arg));
   printf("{Fiber 4: end!}\n");
   ret4=1;
+  float x = 3.014f;
+  float e = 5.104235367353;
+  float f = e*x;
+  printf("{Fiber 4 using FPU : %f}\n", f);
   switch_to_fiber(nextFiber2);
-  printf("[Fiber 4: UNREACHABLE!}\n");
+  f = e*x;
+  printf("[Fiber 4: exiting %f!}\n",f);
+  exit(0);
 }
 
 int all_done()
@@ -45,13 +51,17 @@ void slave2(void* arg)
   void (*foo)(void*)=(void*)(slave4);
   nextFiber4= create_fiber(2<<12,foo,(void*)3);
   switch_to_fiber(nextFiber4);
+  float e = 3.104f;
+  float x = 103.224552;
+  float f = e*x;
+  printf("{Fiber 2 using FPU : %f}\n", f);
   printf("{Fiber 2 end ...}\n");
   ret2=1;
   printf("{Fiber 2 waiting}\n");
   while(!all_done());
   printf("{Fiber 2 waked up!}\n");
+  switch_to_fiber(nextFiber4);
   printf("[EXITING PROCESS!!]\n");
-  exit(0);
 }
 
 void slave1(void* arg)
