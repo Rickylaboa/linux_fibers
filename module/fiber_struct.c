@@ -2,11 +2,57 @@
 
 static struct fiber_hash ft;
 static struct process_hash pt;
+static struct thread_hash tt;
 
 
+/*  This function initializes the three hashtables needed
+    to store the correct informations about fibers and their
+    relationships with processes, threads and their own ids.*/
 extern void init_fiber_set(void){
-    hash_init(ft.fiber_table); // INIT FIBER HASH TABLE
-    hash_init(pt.process_table); // INIT PROCESS HASH TABLE
+    hash_init(ft.fiber_table); // INIT FIBERS HASH TABLE
+    hash_init(pt.process_table); // INIT PROCESSES HASH TABLE
+    hash_init(tt.thread_table); // INIT THREADS HASH TABLE
+
+}
+
+/*  This function returns 1 if the current thread is a fiber, 0 otherwise.*/
+extern int is_a_fiber(void)
+{
+    struct thread_set* curr;
+    unsigned long flags;
+    int key;
+    key = current->pid;
+    spin_lock_irqsave(&(tt.tt_lock), flags); // begin of cs
+    hash_for_each_possible(tt.thread_table,curr,list,key){
+        if(curr==NULL) break;
+        if(curr->tid==key){
+            spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of cs
+            return 1;
+        }
+    }
+    spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of cs
+    return 0;
+}
+
+/*  This function returns the fiber id to the current fiber, if
+    the current thread is a fiber, otherwise it returns -1.*/
+extern long current_fiber(void)
+{
+    struct thread_set* curr;
+    unsigned long flags;
+    int key;
+    key = current->pid;
+    spin_lock_irqsave(&(tt.tt_lock), flags); // begin of cs
+    hash_for_each_possible(tt.thread_table,curr,list,key){
+        if(curr==NULL) break;
+        if(curr->tid==key){
+            long af = curr->active_fiber_index;
+            spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of cs
+            return af;
+        }
+    }
+    spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of cs
+    return -1;
 }
 
 /*  This function provides a way to retrieve a fresh index
@@ -83,6 +129,26 @@ extern long add_fiber(struct fiber_struct *f){
     spin_unlock_irqrestore(&(ft.ft_lock), flags); // end of cs
     return 0;
 }
+
+/*  This function adds a thread to the thread hashtable. It uses a spinlock
+    to access the table. */
+extern int add_thread(int tid,long active_fiber_index){
+    long long key;
+    unsigned long flags;
+    struct thread_set* elem = kmalloc(sizeof(struct fiber_set), __GFP_HIGH);
+    if(elem==NULL){
+        printk(KERN_INFO "%s: error in kmalloc()\n",NAME);
+        return -1;
+    }
+    elem->tid =  tid;
+    elem->active_fiber_index = active_fiber_index;
+    key = tid;
+	spin_lock_irqsave(&(tt.tt_lock), flags); // begin of cs
+    hash_add_rcu(tt.thread_table,&(elem->list),key);
+    spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of cs
+    return 0;
+}
+
 
 /*  To do! */
 extern void remove_fiber(long index){ // TO MODIFY

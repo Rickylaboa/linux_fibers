@@ -18,6 +18,7 @@
 
 #define FIBER_BKT 8
 #define PROCESS_BKT 15
+#define THREAD_BKT 15
 #define MAX_FIBERS 10
 #define NAME "fibers"
 
@@ -41,6 +42,12 @@ struct process_set{
     struct hlist_node list;
 };
 
+struct thread_set{
+    int tid;
+    long active_fiber_index; 
+    struct hlist_node list;
+};
+
 struct fiber_hash{
     spinlock_t ft_lock;
     DECLARE_HASHTABLE(fiber_table,FIBER_BKT);
@@ -51,10 +58,18 @@ struct process_hash{
     DECLARE_HASHTABLE(process_table,PROCESS_BKT);
 };
 
+struct thread_hash{
+    spinlock_t tt_lock;
+    DECLARE_HASHTABLE(thread_table,THREAD_BKT);
+};
+
 extern long get_new_index(void);
+extern int is_a_fiber(void);
+extern long current_fiber(void);
 extern void init_fiber_set(void);
 extern struct fiber_struct* init_fiber(int status,int pid, int thread_running,long index,struct pt_regs regs);
 extern long add_fiber(struct fiber_struct* f);
+extern int add_thread(int tid,long active_fiber_index);
 extern void remove_fiber(long index);
 extern struct fiber_struct* get_fiber(long index);
 extern void free_all_tables(void);

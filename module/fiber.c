@@ -73,7 +73,10 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
   }
 
   fX = get_fiber(867);
-  if(fX!=NULL) printk(KERN_INFO "%s: Linux hack: (%ld,%d)!",NAME,fX->index,fX->pid);
+  if(fX!=NULL) printk(KERN_INFO "%s: Linux hack 1: (%ld,%d)!",NAME,fX->index,fX->pid);
+  add_thread(current->pid,fX->index);
+  long cf = current_fiber();
+  if(cf>=0) printk(KERN_INFO "%s: Linux hack 2: (%ld)!",NAME,cf);
   free_all_tables();
 
 	switch(cmd)
