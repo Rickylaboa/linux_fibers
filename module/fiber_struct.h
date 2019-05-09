@@ -31,18 +31,18 @@ struct fiber_struct{
     struct pt_regs registers;
 };
 
-struct fiber_set{
+struct fiber_node{
     struct fiber_struct data;
     struct hlist_node list;
 };
 
-struct process_set{
+struct process_node{
     int pid;
     long index;
     struct hlist_node list;
 };
 
-struct thread_set{
+struct thread_node{
     int tid;
     long active_fiber_index; 
     struct hlist_node list;
@@ -66,7 +66,7 @@ struct thread_hash{
 extern long get_new_index(void);
 extern int is_a_fiber(void);
 extern long current_fiber(void);
-extern void init_fiber_set(void);
+extern void init_hashtables(void);
 extern struct fiber_struct* init_fiber(int status,int pid, int thread_running,long index,struct pt_regs regs);
 extern long add_fiber(struct fiber_struct* f);
 extern int add_thread(int tid,long active_fiber_index);

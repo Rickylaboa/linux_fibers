@@ -25,7 +25,7 @@ static struct miscdevice mdev = {
 int init_module(void){
 
   int ret = misc_register(&mdev);
-  init_fiber_set();  
+  init_hashtables();  
   if(ret != 0){
     printk(KERN_ERR "%s: Error in misc_register() function\n", NAME);
   }

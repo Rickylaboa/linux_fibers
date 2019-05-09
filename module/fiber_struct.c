@@ -8,7 +8,7 @@ static struct thread_hash tt;
 /*  This function initializes the three hashtables needed
     to store the correct informations about fibers and their
     relationships with processes, threads and their own ids.*/
-extern void init_fiber_set(void){
+extern void init_hashtables(void){
     hash_init(ft.fiber_table); // INIT FIBERS HASH TABLE
     hash_init(pt.process_table); // INIT PROCESSES HASH TABLE
     hash_init(tt.thread_table); // INIT THREADS HASH TABLE
@@ -18,7 +18,7 @@ extern void init_fiber_set(void){
 /*  This function returns 1 if the current thread is a fiber, 0 otherwise.*/
 extern int is_a_fiber(void)
 {
-    struct thread_set* curr;
+    struct thread_node* curr;
     unsigned long flags;
     int key;
     key = current->pid;
@@ -38,7 +38,7 @@ extern int is_a_fiber(void)
     the current thread is a fiber, otherwise it returns -1.*/
 extern long current_fiber(void)
 {
-    struct thread_set* curr;
+    struct thread_node* curr;
     unsigned long flags;
     int key;
     key = current->pid;
@@ -63,8 +63,8 @@ extern long get_new_index(void){
     int key;
     long fresh_index;
 	unsigned long flags;
-    struct process_set* curr;
-    struct process_set* elem;
+    struct process_node* curr;
+    struct process_node* elem;
     key = current->parent->pid; // the key in pt is the pid
 
     fresh_index = -1;
@@ -81,7 +81,7 @@ extern long get_new_index(void){
     }
     // It means this is the first fiber of the process
     fresh_index = 0;
-    elem = kmalloc(sizeof(struct process_set), __GFP_HIGH);
+    elem = kmalloc(sizeof(struct process_node), __GFP_HIGH);
     if(elem==NULL){
         printk(KERN_INFO "%s: error in kmalloc()\n",NAME);
         spin_unlock_irqrestore(&(pt.pt_lock), flags); // end of cs
@@ -117,7 +117,7 @@ extern struct fiber_struct* init_fiber(int status,int pid,int thread_running,lon
 extern long add_fiber(struct fiber_struct *f){
     long long key;
     unsigned long flags;
-    struct fiber_set* elem = kmalloc(sizeof(struct fiber_set), __GFP_HIGH);
+    struct fiber_node* elem = kmalloc(sizeof(struct fiber_node), __GFP_HIGH);
     if(elem==NULL){
         printk(KERN_INFO "%s: error in kmalloc()\n",NAME);
         return -1;
@@ -135,7 +135,7 @@ extern long add_fiber(struct fiber_struct *f){
 extern int add_thread(int tid,long active_fiber_index){
     long long key;
     unsigned long flags;
-    struct thread_set* elem = kmalloc(sizeof(struct fiber_set), __GFP_HIGH);
+    struct thread_node* elem = kmalloc(sizeof(struct fiber_node), __GFP_HIGH);
     if(elem==NULL){
         printk(KERN_INFO "%s: error in kmalloc()\n",NAME);
         return -1;
@@ -153,7 +153,7 @@ extern int add_thread(int tid,long active_fiber_index){
     into the thread hashtable. It uses a spinlock to access the table and
     returns 1 on success, 0 on failure*/
 extern int set_thread(int tid,long active_fiber_index){
-    struct thread_set* curr;
+    struct thread_node* curr;
     unsigned long flags;
     int key;
     key = current->pid;
@@ -182,7 +182,7 @@ extern struct fiber_struct* get_fiber(long index){
 
     long long key;
     unsigned long flags;
-    struct fiber_set* curr;
+    struct fiber_node* curr;
     key = (long long) ((long long) current->parent->pid << MAX_FIBERS) + index; 
 	spin_lock_irqsave(&(ft.ft_lock), flags); // begin of cs
     hash_for_each_possible(ft.fiber_table,curr,list,key){
@@ -200,9 +200,9 @@ extern struct fiber_struct* get_fiber(long index){
 /*  This function frees all the tables used. No clear if it is usefull. 
     Debugging and testing purposes for now. */
 extern void free_all_tables(void){
-    struct fiber_set* curr1;
-    struct process_set* curr2;
-    struct thread_set* curr3;
+    struct fiber_node* curr1;
+    struct process_node* curr2;
+    struct thread_node* curr3;
 
     int bkt1,bkt2,bkt3;
     unsigned long flags;
