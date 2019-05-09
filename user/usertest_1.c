@@ -4,10 +4,10 @@
 
 #define NUM_THREADS 2
 
-int nextFiber1;
-int nextFiber2;
-int nextFiber3;
-int nextFiber4;
+long nextFiber1;
+long nextFiber2;
+long nextFiber3;
+long nextFiber4;
 int ret1=0;
 int ret2=0;
 int ret3=0;
@@ -20,7 +20,6 @@ pthread_t threads[NUM_THREADS];
 void slave4(void* arg)
 {
   printf("{Fiber 4 begin [%ld]}\n",((long int) arg));
-  printf("{Fiber 4: switching from %d to %d}\n",nextFiber4,nextFiber2);
   printf("{Fiber 4: end!}\n");
   ret4=1;
   switch_to_fiber(nextFiber2);
@@ -48,11 +47,9 @@ void slave2(void* arg)
   switch_to_fiber(nextFiber4);
   printf("{Fiber 2 end ...}\n");
   ret2=1;
-  while(!all_done())
-    {
-      
-      printf("{Fiber 2 waiting}\n");
-    }
+  printf("{Fiber 2 waiting}\n");
+  while(!all_done());
+  printf("{Fiber 2 waked up!}\n");
   printf("[EXITING PROCESS!!]\n");
   exit(0);
 }
@@ -81,24 +78,24 @@ void* king_one(void* num)
 
 void* king_two(void* num)
 {
-  int conv= convert_thread_to_fiber();
-  /*char* name=">> Master 2";
+  int conv = convert_thread_to_fiber();
+  char* name = ">> Master 2";
   printf("%s: - king fiber begin! -\n",name);
-  void (*foo)(void *)=(void*)(slave2);
-  nextFiber2= create_fiber(2<<12,foo,(void*)1);
-  switch_to_fiber(nextFiber2);*/
+  void (*foo)(void *) = (void*)(slave2);
+  nextFiber2 = create_fiber(2<<12,foo,(void*)1);
+  switch_to_fiber(nextFiber2);
 }
 
 
 int main()
 {
 
-  /*int rc, i;
+  int rc, i;
   rc = pthread_create(&threads[0],NULL,king_one,NULL);
   if(rc>0)
     {
       printf("Error creating thread\n");
-    }	*/
+    }	
   int x=2;
   king_two(&x);
 	

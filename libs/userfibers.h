@@ -38,7 +38,7 @@ long switch_to_fiber(long index){
     open_device();
   }
 
-  long ret = ioctl(fd, IOCTL_SWITCH, index);
+  long ret = ioctl(fd, IOCTL_SWITCH,&index);
   return ret;
 }
 

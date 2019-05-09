@@ -35,6 +35,7 @@ int init_module(void){
 
 void cleanup_module(void){
 
+  free_all_tables();
   misc_deregister(&mdev);
 }
 
@@ -52,38 +53,16 @@ static int hit_release(struct inode *inode, struct file *file){    // to do...
 
 
 static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user ptr){
-  struct fiber_info* nfib;
-  struct pt_regs regs;
-  int i=0,n=1024,ret=0;
-  struct fiber_struct* f[n];
-  struct fiber_struct* fX;
 
-
-  printk(KERN_INFO "%s: Fibers Module called! Process pid: %d\n",NAME,(current->parent->pid));
-  regs = *task_pt_regs(current);
-  for(i=0; i<n; i++)
-  {
-    ret = get_new_index();
-    if(ret<0){
-      printk(KERN_ERR "%s: Error allocating a new index for fiber\n",NAME);
-      return -1;
-    }
-    f[i]=init_fiber(INACTIVE_FIBER,current->parent->pid,current->pid,ret,regs);
-    add_fiber(f[i]);
-  }
-
-  fX = get_fiber(867);
-  if(fX!=NULL) printk(KERN_INFO "%s: Linux hack 1: (%ld,%d)!",NAME,fX->index,fX->pid);
-  add_thread(current->pid,fX->index);
-  long cf = current_fiber();
-  if(cf>=0) printk(KERN_INFO "%s: Linux hack 2: (%ld)!",NAME,cf);
-  free_all_tables();
+  struct fiber_info *nfib;
+  long *index;
 
 	switch(cmd)
 	{
 		case IOCTL_CONVERT: // Userspace requires to convert a thread to fiber
 			printk(KERN_INFO "%s: CONVERT\n", NAME);
 			return fiber_convert();
+
 		case IOCTL_CREATE: // Userspace requires to create a new fiber
 			printk(KERN_INFO "%s: CREATE\n", NAME);
       nfib = (struct fiber_info*) kmalloc(sizeof(struct fiber_info), __GFP_HIGH);
@@ -92,10 +71,19 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
         return -1;
       }
       copy_from_user(nfib,(struct fiber_info*)ptr,sizeof(struct fiber_info));
-			return 0;
+			return fiber_create((unsigned long) nfib->routine, (unsigned long) nfib->stack, (unsigned long) nfib->args);
+
 		case IOCTL_SWITCH: // Userspace requires to switch from fiber x to fiber y
 			printk(KERN_INFO "%s: SWITCH\n", NAME);
-			return 0;
+      index = kmalloc(sizeof(long), __GFP_HIGH);
+      if(!index){
+        printk(KERN_ERR "%s: Error in kmalloc()\n", NAME);
+        return -1;
+      }
+
+      copy_from_user(index,(long *)ptr, sizeof(long));
+			return fiber_switch(*index);
+
 		default:
 			return 0;		
 	}
