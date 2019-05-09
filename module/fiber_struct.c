@@ -46,9 +46,9 @@ extern long current_fiber(void)
     hash_for_each_possible(tt.thread_table,curr,list,key){
         if(curr==NULL) break;
         if(curr->tid==key){
-            long af = curr->active_fiber_index;
+            long active_fiber_index = curr->active_fiber_index;
             spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of cs
-            return af;
+            return active_fiber_index;
         }
     }
     spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of cs
@@ -144,7 +144,7 @@ extern int add_thread(int tid,long active_fiber_index){
     elem->active_fiber_index = active_fiber_index;
     key = tid;
 	spin_lock_irqsave(&(tt.tt_lock), flags); // begin of cs
-    hash_add_rcu(tt.thread_table,&(elem->list),key);
+    hash_add(tt.thread_table,&(elem->list),key);
     spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of cs
     return 0;
 }
@@ -202,7 +202,9 @@ extern struct fiber_struct* get_fiber(long index){
 extern void free_all_tables(void){
     struct fiber_set* curr1;
     struct process_set* curr2;
-    int bkt1,bkt2;
+    struct thread_set* curr3;
+
+    int bkt1,bkt2,bkt3;
     unsigned long flags;
     int i;
     i=0;
@@ -224,5 +226,14 @@ extern void free_all_tables(void){
     }  
     spin_unlock_irqrestore(&(pt.pt_lock), flags); // end of cs
     printk(KERN_INFO "%s: PT has issued kfree on %d elements \n",NAME,i);
+    i=0;
+
+    spin_lock_irqsave(&(tt.tt_lock), flags); // begin of cs
+    hash_for_each(tt.thread_table,bkt3,curr3,list){
+        kfree(curr3);
+        i++;
+    }  
+    spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of cs
+    printk(KERN_INFO "%s: TT has issued kfree on %d elements \n",NAME,i);
 
 }
