@@ -54,7 +54,7 @@ static int hit_release(struct inode *inode, struct file *file){    // to do...
 static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user ptr){
   struct fiber_info* nfib;
   struct pt_regs regs;
-  int i=0,n=1000;
+  int i=0,n=1024,ret=0;
   struct fiber_struct* f[n];
   struct fiber_struct* fX;
 
@@ -63,13 +63,18 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
   regs = *task_pt_regs(current);
   for(i=0; i<n; i++)
   {
-    f[i]=init_fiber(INACTIVE_FIBER,current->parent->pid,current->pid,i,regs);
+    ret = get_new_index();
+    if(ret<0){
+      printk(KERN_ERR "%s: Error allocating a new index for fiber\n",NAME);
+      return -1;
+    }
+    f[i]=init_fiber(INACTIVE_FIBER,current->parent->pid,current->pid,ret,regs);
     add_fiber(f[i]);
   }
 
-  fX = get_fiber(150);
+  fX = get_fiber(867);
   if(fX!=NULL) printk(KERN_INFO "%s: Linux hack: (%ld,%d)!",NAME,fX->index,fX->pid);
-  free_all_table();
+  free_all_tables();
 
 	switch(cmd)
 	{

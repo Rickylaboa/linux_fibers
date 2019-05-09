@@ -13,11 +13,12 @@
 #include <asm/current.h>
 #include <asm/processor.h>
 #include <linux/syscalls.h>
-#include <linux/spinlock.h> // TO REMOVE WHITH HASHMAP
+#include <linux/spinlock.h> 
 #include <linux/hashtable.h>
 
 #define FIBER_BKT 8
-#define MAX_DIM 2400
+#define PROCESS_BKT 15
+#define MAX_FIBERS 10
 #define NAME "fibers"
 
 
@@ -29,19 +30,31 @@ struct fiber_struct{
     struct pt_regs registers;
 };
 
-struct fiber_set
-{
+struct fiber_set{
     struct fiber_struct data;
     struct hlist_node list;
 };
 
+struct process_set{
+    int pid;
+    long index;
+    struct hlist_node list;
+};
+
 struct fiber_hash{
+    spinlock_t ft_lock;
     DECLARE_HASHTABLE(fiber_table,FIBER_BKT);
 };
 
+struct process_hash{
+    spinlock_t pt_lock;
+    DECLARE_HASHTABLE(process_table,PROCESS_BKT);
+};
+
+extern long get_new_index(void);
 extern void init_fiber_set(void);
 extern struct fiber_struct* init_fiber(int status,int pid, int thread_running,long index,struct pt_regs regs);
 extern long add_fiber(struct fiber_struct* f);
 extern void remove_fiber(long index);
 extern struct fiber_struct* get_fiber(long index);
-extern void free_all_table(void);
+extern void free_all_tables(void);
