@@ -1,4 +1,4 @@
-# linux_fibers
+# Linux Fibers Module
 
 This is the implementation of Windows Fibers on Linux.
 
