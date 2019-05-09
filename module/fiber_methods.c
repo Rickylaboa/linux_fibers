@@ -1,5 +1,8 @@
 #include <fiber_methods.h>
 
+/* Function to create a new (inactive) fiber, initialized
+    with the userspace data: ip( instruction pointer), 
+    sp (stack pointer) and di. It calls fiber alloc*/
 extern long fiber_create(unsigned long ip, unsigned long sp, unsigned long di){
     
     struct pt_regs regs = *task_pt_regs(current);
@@ -11,6 +14,9 @@ extern long fiber_create(unsigned long ip, unsigned long sp, unsigned long di){
     return fiber_alloc(INACTIVE_FIBER, regs);
 }
 
+/*  Function to convert a thread to fiber (active one!), 
+    it calls fiber alloc and add the current thread to
+    thread hash map, with the index of the active fiber. */
 extern long fiber_convert(void){
 
     long fiber_index;
@@ -22,6 +28,12 @@ extern long fiber_convert(void){
 
 }
 
+/*  Function that allows to change the fiber context (pt_regs) from the current
+    fiber, retrieved with the same called function, to the next fiber, retrieved 
+    by the index passed from userspace. It first copies the actual context into 
+    the current fiber context, then it copies the next fiber context into the actual
+    context, both via memcpy. Before returning, it sets the new active fiber for the 
+    current thread. */
 extern long fiber_switch(long index){
 
     struct pt_regs *regs;
@@ -40,6 +52,10 @@ extern long fiber_switch(long index){
 
     return 0;
 }
+
+/*  Function called by both fiber_create and fiber_convert. It get a fresh
+    index for a new fiber, calls init fiber (fiber_struct.c) and adds the
+    new fiber to the fiber hash table, returning its index. */
 extern long fiber_alloc(int status, struct pt_regs regs){
 
     struct fiber_struct* new_fiber;
