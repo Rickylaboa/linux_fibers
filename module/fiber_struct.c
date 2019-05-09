@@ -9,6 +9,10 @@ extern void init_fiber_set(void){
     hash_init(pt.process_table); // INIT PROCESS HASH TABLE
 }
 
+/*  This function provides a way to retrieve a fresh index
+    for a new fibers. It uses an hashmap for each process
+    using fibers. The key to access this map is the pid of
+    the process and there is a spinlock to access the hashtable. */
 extern long get_new_index(void){
     int key;
     long fresh_index;
@@ -44,6 +48,10 @@ extern long get_new_index(void){
     return fresh_index;
 }
 
+/*  This function is used to initialized a new fiber. It takes the status,
+    the pid of the process, the pid of the thread, the index of the fiber
+    to initialize and the pt_regs. It uses kmalloc to allocate memory and 
+    fullfills it with the fields of a fiber. */
 extern struct fiber_struct* init_fiber(int status,int pid,int thread_running,long index,struct pt_regs regs){
     struct fiber_struct* new_fiber =  kmalloc(sizeof(struct fiber_struct), __GFP_HIGH);
     if(new_fiber==NULL){
@@ -58,6 +66,8 @@ extern struct fiber_struct* init_fiber(int status,int pid,int thread_running,lon
     return new_fiber;
 }
 
+/*  This function adds a fiber to the fiber hashtable. It uses a spinlock
+    to access the table. */
 extern long add_fiber(struct fiber_struct *f){
     long long key;
     unsigned long flags;
@@ -74,11 +84,13 @@ extern long add_fiber(struct fiber_struct *f){
     return 0;
 }
 
-
+/*  To do! */
 extern void remove_fiber(long index){ // TO MODIFY
     return;
 }
 
+/*  This functions retrieves a fiber by index into the
+    fiber hashtable. It uses a spinlock to access the table. */
 extern struct fiber_struct* get_fiber(long index){
 
     long long key;
@@ -98,6 +110,8 @@ extern struct fiber_struct* get_fiber(long index){
     return NULL;
 }
 
+/*  This function frees all the tables used. No clear if it is usefull. 
+    Debugging and testing purposes for now. */
 extern void free_all_tables(void){
     struct fiber_set* curr1;
     struct process_set* curr2;
