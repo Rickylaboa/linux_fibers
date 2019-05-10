@@ -5,8 +5,10 @@
     sp (stack pointer) and di. It calls fiber alloc*/
 extern long fiber_create(unsigned long ip, unsigned long sp, unsigned long di){
     
-    struct pt_regs regs = *task_pt_regs(current);
-    
+    struct pt_regs regs;
+    if(!is_a_fiber()) return -1; // If not a fiber, it must before issua a convert!
+
+    regs = *task_pt_regs(current);
     regs.ip = ip;
     regs.sp = sp;
     regs.di = di;
@@ -22,7 +24,6 @@ extern long fiber_convert(void){
     int ret=0;
     long fiber_index;
     struct pt_regs regs = *task_pt_regs(current);
-    long cf;
 
 
     fiber_index = fiber_alloc(ACTIVE_FIBER, regs);
@@ -45,8 +46,11 @@ extern long fiber_switch(long index){
     struct pt_regs *regs;
     struct fiber_struct *curr_fiber;
     struct fiber_struct *next_fiber;
-    long current_index = current_fiber();
+    long current_index;
+    if(!is_a_fiber()) return -1; // If not a fiber, it must before issua a convert!
 
+
+    current_index = current_fiber();
     regs = task_pt_regs(current);
     curr_fiber = get_fiber(current_index);
     next_fiber = get_fiber(index);

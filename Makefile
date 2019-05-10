@@ -10,7 +10,6 @@ all:
 
 clean:
 	sudo make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
-	
 
 remove:
 	sudo rmmod fiber
