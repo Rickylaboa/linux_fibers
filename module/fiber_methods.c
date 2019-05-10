@@ -63,11 +63,19 @@ extern long fiber_switch(long index){
         printk(KERN_ERR "%s: critical error, next fiber NULL\n",NAME);
         return -1;    
     }
+    if(next_fiber->status == ACTIVE_FIBER) return -1;
 
     memcpy(&curr_fiber->registers, regs, sizeof(struct pt_regs));
     curr_fiber->status = INACTIVE_FIBER;
     memcpy(regs, &next_fiber->registers, sizeof(struct pt_regs));
     next_fiber->status = ACTIVE_FIBER;
+
+    printk(KERN_INFO "%s: Swtching from %ld to %ld\n",NAME,curr_fiber->index,next_fiber->index);
+	/*fpu__save(&curr_fiber->fpu_registers);
+	preempt_disable();
+	fpu__restore(&next_fiber->fpu_registers);
+    preempt_enable();*/
+
     set_thread(current->pid,next_fiber->index);
 
     return 0;

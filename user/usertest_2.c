@@ -11,7 +11,7 @@
     Notice that NUM_THREADS can be at most 409, because in this way the number of fibers created by this process will be
     409 + 4x409 + 1 = 410 + 1636 = 2046 < 2048 (maximum number of fibers). 
     Adding just one thread will cause some fibers impossible to create, causing kernel errors ;-) */
-#define NUM_THREADS 409 
+#define NUM_THREADS 100 
 #define NUM_FIBERS NUM_THREADS*4
 
 
@@ -22,25 +22,27 @@ int finished[NUM_FIBERS+NUM_THREADS+1];
 
 pthread_t threads[NUM_THREADS];
 
-
-/*  Function to print a fiber had worked,
-    pausing itself for eternity. */
-void fib2(void* arg)
+long get_random_fiber()
 {
-    long int f = (long int) arg;
-    printf("[Fiber %ld done!]\n",c_fibers[f]);
-    finished[c_fibers[f]]=1;
-    while(1);
+    long n = (long) rand() % NUM_FIBERS + 1;
+    return n;
 }
+
 
 /*  Function to print a fiber had worked,
     switching to the next fiber.*/
 void fib1(void* arg)
 {
-    long int f = (long int) arg;
+    int ret = -1;
+    long f = (long) arg;
     printf("[Fiber %ld done!]\n",c_fibers[f]);
     finished[c_fibers[f]]=1;
-    switch_to_fiber(c_fibers[f+1]);
+    while(1){
+        long rf=get_random_fiber();
+        if(finished[ret]) rf = c_fibers[f]+1;
+        ret=switch_to_fiber(rf);
+        if(ret<0) continue;
+    }
 }
 
 /*  Function checking the shared array, guessing
@@ -50,9 +52,10 @@ int all_done()
     int i;
     int ret=1;
     for(i=0; i<NUM_FIBERS+NUM_THREADS+1; i++){
-        if(finished[i]==0) ret=0;
+        if(finished[i]==0){
+            ret=0;
+        }
     }
-    printf("\n");
     if(ret)printf("[Main: all terminated!]\n");
     return ret;
 }
@@ -62,12 +65,13 @@ int all_done()
     that had worked and then switches to a proper fiber.*/
 void* ptfunction(void* start)
 {
-    long int s = (long int) start;
+    long s = (long) start;
     int i = s;
     t_fibers[s]=convert_thread_to_fiber();
     printf("[King fiber %ld done]\n",t_fibers[s]);
     finished[t_fibers[s]]=1;
-    switch_to_fiber(c_fibers[s*4]);
+    int ret=-1;
+    while(ret<0) ret = switch_to_fiber(c_fibers[s]);
 }
 
 /*  Main thread converts to fiber, creates NUM_FIBER number of fibers, NUM_THREAD number
@@ -82,17 +86,13 @@ int main()
 {
     int num_fibers, num_threads;
     long i,ret=0;
+    printf("System is %ld bits\n",system_architecture());
     mainfiber = convert_thread_to_fiber();
     printf("[Main fiber begins..]\n");
     for(i=0; i<NUM_FIBERS; i++)
     {
-        if((i+1)%4==0)
-        {
-            c_fibers[i] = create_fiber(2<<12,fib2,((void*)(i)));
-        }
-        else c_fibers[i] = create_fiber(2<<12,fib1,((void*)(i)));
+        c_fibers[i] = create_fiber(2<<12,fib1,((void*)(i)));
     }
-    printf("\n");
     for(i=0; i<NUM_THREADS; i++){
         ret=pthread_create(&threads[i],NULL,ptfunction,((void*)(i)));
         if(ret<0){

@@ -6,7 +6,8 @@
 #include <linux/fs.h>
 #include <linux/slab.h>
 #include <linux/sched.h>
-#include <linux/pid.h>
+#include <asm/fpu/internal.h>
+#include <linux/types.h>
 #include <linux/tty.h>
 #include <linux/version.h>
 #include <asm/ptrace.h>
@@ -15,6 +16,7 @@
 #include <linux/syscalls.h>
 #include <linux/spinlock.h> 
 #include <linux/hashtable.h>
+
 
 #define FIBER_BKT 8
 #define PROCESS_BKT 15
@@ -29,6 +31,7 @@ struct fiber_struct{
     int thread_running;
     long index;
     struct pt_regs registers;
+    struct fpu fpu_registers;
 };
 
 struct fiber_node{

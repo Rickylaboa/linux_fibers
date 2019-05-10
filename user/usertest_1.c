@@ -1,38 +1,39 @@
 #include<stdio.h>
 #include<pthread.h>
+#include<float.h>
+#include <sys/types.h>
 #include"../libs/userfibers.h"
+
 
 #define NUM_THREADS 2
 
 long nextFiber[4];
 int ret[4];
 
-
 pthread_t threads[NUM_THREADS];
 
-float op(float f1, float f2)
-{
-  return f1*f2;
-}
 
 void slave4(void* arg)
 {
-  register float x;
   printf("{Fiber 4 begin [%ld]}\n",((long int) arg));
   printf("{Fiber 4: end!}\n");
   ret[3]=1;
-  //x = op(1.234234534563,2.23556457745);
-  //printf("{Fiber 4 using FPU : %f}\n", x);
+  register float p;
+  printf("{Fiber 4: p=%.10e!}\n",p);
   switch_to_fiber(nextFiber[1]);
-  printf("{Fiber 4 before exiting}\n");
-
-  exit(0);
+  p=100.22352324f;
+  printf("{Fiber 4: p=%.10e!}\n",p);
+  printf("{Fiber 4 before last switching}\n");
+  switch_to_fiber(nextFiber[1]);
 }
 
 int all_done()
 {
-  printf("{%d %d %d %d}\n",ret[0],ret[1],ret[2],ret[3]);
-  return ret[0]&&ret[1]&&ret[2]&&ret[3];
+  int i,value=1;
+  for(i=0; i<4; i++){
+    if(!ret[i]) value=0;
+  }
+  return value;
 }
 
 void slave3(void* arg)
@@ -49,15 +50,17 @@ void slave2(void* arg)
   void (*foo)(void*)=(void*)(slave4);
   nextFiber[3]= create_fiber(2<<12,foo,(void*)3);
   switch_to_fiber(nextFiber[3]);
-  //register float f = op(21.2342345235,24.234256);
-  //printf("{Fiber 2 using FPU : %f}\n", f);
+  register float x = 1.353246253246523f;
+  printf("{Fiber 2 x=%.10e}\n",(x*2));
   printf("{Fiber 2 end ...}\n");
   ret[1]=1;
   printf("{Fiber 2 waiting}\n");
   while(!all_done());
   printf("{Fiber 2 waked up!}\n");
   switch_to_fiber(nextFiber[3]);
-  printf("[EXITING PROCESS!!]\n");
+  printf("{Fiber 2 x=%.10e}\n",(x*2));
+  printf("[Fiber 2 EXIT PROCESS]\n");
+  exit(0);
 }
 
 void slave1(void* arg)
