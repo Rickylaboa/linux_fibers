@@ -12,6 +12,7 @@ extern long fiber_create(unsigned long ip, unsigned long sp, unsigned long di){
     regs.ip = ip;
     regs.sp = sp;
     regs.di = di;
+    regs.cx = di;
 
     return fiber_alloc(INACTIVE_FIBER, regs);
 }

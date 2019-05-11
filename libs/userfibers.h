@@ -48,11 +48,12 @@ long switch_to_fiber(long index){
   return ret;
 }
 
-long create_fiber(size_t stack_size, void (*routine)(void *), void *args){
+long create_fiber(size_t stack_size,void (*routine)(void *), void *args){
 
   if(fd == -1 ){
     open_device();
   }
+
 
   void *stack = mmap(NULL, stack_size, PROT_WRITE | PROT_READ, MAP_PRIVATE | MAP_ANON, -1, 0);
   if(!stack){

@@ -31,7 +31,7 @@ long get_random_fiber()
 
 /*  Function to print a fiber had worked,
     switching to the next fiber.*/
-void fib1(void* arg)
+__attribute__((fastcall)) void fib1(void* arg) 
 {
     int ret = -1;
     long f = (long) arg;
@@ -39,7 +39,8 @@ void fib1(void* arg)
     finished[c_fibers[f]]=1;
     while(1){
         long rf=get_random_fiber();
-        if(finished[rf]) rf = c_fibers[f]+1;
+        while(finished[rf]) rf = (rf + 1)%(NUM_FIBERS+1);
+        printf("[Fiber %ld selected %ld]\n",c_fibers[f],c_fibers[rf]);
         ret=switch_to_fiber(rf);
         if(ret<0) continue;
     }
@@ -91,7 +92,8 @@ int main()
     printf("[Main fiber begins..]\n");
     for(i=0; i<NUM_FIBERS; i++)
     {
-        c_fibers[i] = create_fiber(2<<12,fib1,((void*)(i)));
+        void* funct = (void*) fib1;
+        c_fibers[i] = create_fiber(2<<12,funct,((void*)(i)));
     }
     for(i=0; i<NUM_THREADS; i++){
         ret=pthread_create(&threads[i],NULL,ptfunction,((void*)(i)));
