@@ -39,7 +39,7 @@ void fib1(void* arg)
     finished[c_fibers[f]]=1;
     while(1){
         long rf=get_random_fiber();
-        if(finished[ret]) rf = c_fibers[f]+1;
+        if(finished[rf]) rf = c_fibers[f]+1;
         ret=switch_to_fiber(rf);
         if(ret<0) continue;
     }
