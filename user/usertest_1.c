@@ -6,6 +6,7 @@
 
 
 #define NUM_THREADS 2
+#define NUM 30
 
 long nextFiber[4];
 int ret[4];
@@ -16,15 +17,19 @@ pthread_t threads[NUM_THREADS];
 void slave4(void* arg)
 {
   printf("{Fiber 4 begin [%ld]}\n",((long int) arg));
-  printf("{Fiber 4: end!}\n");
   ret[3]=1;
   register float p;
   printf("{Fiber 4: p=%.10e!}\n",p);
   switch_to_fiber(nextFiber[1]);
-  p=100.22352324f;
   printf("{Fiber 4: p=%.10e!}\n",p);
   printf("{Fiber 4 before last switching}\n");
-  switch_to_fiber(nextFiber[1]);
+  while(1)
+  {
+    printf("{Fiber 4 ---->}\n");
+    sleep(1);
+    int ret = -1;
+    while(ret<0) ret = switch_to_fiber(nextFiber[1]);
+  }
 }
 
 int all_done()
@@ -42,6 +47,12 @@ void slave3(void* arg)
   printf("{Fiber 3 end ... }\n");
   ret[2]=1;
   switch_to_fiber(nextFiber[0]);
+  while(1)
+  {
+    printf("{Fiber 3 ---->}\n");
+    sleep(1);
+    int ret = -1;
+    while(ret<0) ret = switch_to_fiber(nextFiber[1]);  }
 }
 
 void slave2(void* arg)
@@ -56,10 +67,16 @@ void slave2(void* arg)
   ret[1]=1;
   printf("{Fiber 2 waiting}\n");
   while(!all_done());
-  printf("{Fiber 2 waked up!}\n");
-  switch_to_fiber(nextFiber[3]);
-  printf("{Fiber 2 x=%.10e}\n",(x*2));
-  printf("[Fiber 2 EXIT PROCESS]\n");
+  int i=0;
+  while(i<NUM)
+  {
+    printf("{Fiber 2, iteration: %d/%d}\n",i,NUM);
+    printf("{Fiber 2 <----}\n");
+    sleep(1);
+    switch_to_fiber(nextFiber[i%4]);
+    i++;
+  }
+  printf("{Fiber 2 terminated.}\n");
   exit(0);
 }
 
@@ -71,7 +88,13 @@ void slave1(void* arg)
   switch_to_fiber(nextFiber[2]);
   printf("{Fiber 1 end ...}\n");
   ret[0]=1;
-  while(1);
+  while(1)
+  {
+    printf("{Master 1 ---->}\n");
+    sleep(1);
+    int ret = -1;
+    while(ret<0) ret = switch_to_fiber(nextFiber[1]);
+  }
 }
 
 
@@ -83,6 +106,13 @@ void* king_one(void* num)
   void (*foo)(void *)=(void*)(slave1);
   nextFiber[0]= create_fiber(2<<12,foo,(void*)2);
   switch_to_fiber(nextFiber[0]);
+  while(1)
+  {
+    printf("{Master 1 ---->}\n");
+    sleep(1);
+    int ret = -1;
+    while(ret<0) ret = switch_to_fiber(nextFiber[1]);
+  }
 }
 
 void* king_two(void* num)
@@ -93,6 +123,13 @@ void* king_two(void* num)
   void (*foo)(void *) = (void*)(slave2);
   nextFiber[1] = create_fiber(2<<12,foo,(void*)1);
   switch_to_fiber(nextFiber[1]);
+  while(1)
+  {
+    printf("{Master 2 ---->}\n");
+    sleep(1);
+    int ret = -1;
+    while(ret<0) ret = switch_to_fiber(nextFiber[1]);
+  }
 }
 
 
