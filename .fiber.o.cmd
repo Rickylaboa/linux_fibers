@@ -1,1 +1,0 @@
-cmd_/home/fabio/Scrivania/linux_fibers/linux_fibers/fiber.o := ld -m elf_x86_64  -z max-page-size=0x200000   -r -o /home/fabio/Scrivania/linux_fibers/linux_fibers/fiber.o /home/fabio/Scrivania/linux_fibers/linux_fibers/module/fiber.o /home/fabio/Scrivania/linux_fibers/linux_fibers/module/fiber_struct.o /home/fabio/Scrivania/linux_fibers/linux_fibers/module/fiber_methods.o 

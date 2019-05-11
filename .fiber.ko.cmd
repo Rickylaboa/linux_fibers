@@ -1,1 +1,0 @@
-cmd_/home/fabio/Scrivania/linux_fibers/linux_fibers/fiber.ko := ld -r -m elf_x86_64  -z max-page-size=0x200000 -T ./scripts/module-common.lds  --build-id  -o /home/fabio/Scrivania/linux_fibers/linux_fibers/fiber.ko /home/fabio/Scrivania/linux_fibers/linux_fibers/fiber.o /home/fabio/Scrivania/linux_fibers/linux_fibers/fiber.mod.o ;  true
