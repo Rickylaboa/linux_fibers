@@ -72,7 +72,11 @@ void* ptfunction(void* start)
     printf("[King fiber %ld done]\n",t_fibers[s]);
     finished[t_fibers[s]]=1;
     int ret=-1;
-    while(ret<0) ret = switch_to_fiber(c_fibers[s]);
+    while(ret<0)
+    {
+        ret = switch_to_fiber(get_random_fiber());
+        printf("[King fiber %ld has selected wrong fiber.]\n",t_fibers[s]);
+    }
 }
 
 /*  Main thread converts to fiber, creates NUM_FIBER number of fibers, NUM_THREAD number
