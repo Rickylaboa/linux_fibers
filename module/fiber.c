@@ -67,7 +67,7 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
 			printk(KERN_INFO "%s: CREATE\n", NAME);
       nfib = (struct fiber_info*) kmalloc(sizeof(struct fiber_info), __GFP_HIGH);
       if(nfib==NULL){
-        printk(KERN_ERR "%s: error in kmalloc()\n",NAME);
+        printk(KERN_ERR "%s: error in kmalloc()\n", NAME);
         return -1;
       }
       copy_from_user(nfib,(struct fiber_info*)ptr,sizeof(struct fiber_info));

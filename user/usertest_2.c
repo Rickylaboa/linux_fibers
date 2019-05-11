@@ -14,11 +14,10 @@
 #define NUM_THREADS 100 
 #define NUM_FIBERS NUM_THREADS*4
 
-
 long t_fibers[NUM_THREADS];
 long c_fibers[NUM_FIBERS];
 long mainfiber;
-int finished[NUM_FIBERS+NUM_THREADS+1];
+int finished[NUM_FIBERS + NUM_THREADS + 1];
 
 pthread_t threads[NUM_THREADS];
 
@@ -31,18 +30,17 @@ long get_random_fiber()
 
 /*  Function to print a fiber had worked,
     switching to the next fiber.*/
-__attribute__((fastcall)) void fib1(void* arg) 
-{
+__attribute__((fastcall)) void fib1(void* arg){
     int ret = -1;
     long f = (long) arg;
-    printf("[Fiber %ld done!]\n",c_fibers[f]);
-    finished[c_fibers[f]]=1;
+    printf("[Fiber %ld done!]\n", c_fibers[f]);
+    finished[c_fibers[f]] = 1;
     while(1){
-        long rf=get_random_fiber();
+        long rf = get_random_fiber();
         while(finished[rf]) rf = (rf + 1)%(NUM_FIBERS+1);
-        printf("[Fiber %ld selected %ld]\n",c_fibers[f],c_fibers[rf]);
-        ret=switch_to_fiber(rf);
-        if(ret<0) continue;
+        printf("[Fiber %ld selected %ld]\n", c_fibers[f], c_fibers[rf]);
+        ret = switch_to_fiber(rf);
+        if(ret < 0) continue;
     }
 }
 
@@ -51,13 +49,13 @@ __attribute__((fastcall)) void fib1(void* arg)
 int all_done()
 {
     int i;
-    int ret=1;
-    for(i=0; i<NUM_FIBERS+NUM_THREADS+1; i++){
-        if(finished[i]==0){
-            ret=0;
+    int ret = 1;
+    for(i = 0; i < NUM_FIBERS + NUM_THREADS + 1; i++){
+        if(finished[i] == 0){
+            ret = 0;
         }
     }
-    if(ret)printf("[Main: all terminated!]\n");
+    if(ret) printf("[Main: all terminated!]\n");
     return ret;
 }
 
@@ -68,14 +66,14 @@ void* ptfunction(void* start)
 {
     long s = (long) start;
     int i = s;
-    t_fibers[s]=convert_thread_to_fiber();
-    printf("[King fiber %ld done]\n",t_fibers[s]);
-    finished[t_fibers[s]]=1;
-    int ret=-1;
-    while(ret<0)
+    t_fibers[s] = convert_thread_to_fiber();
+    printf("[King fiber %ld done]\n", t_fibers[s]);
+    finished[t_fibers[s]] = 1;
+    int ret = -1;
+    while(ret < 0)
     {
         ret = switch_to_fiber(get_random_fiber());
-        printf("[King fiber %ld has selected wrong fiber.]\n",t_fibers[s]);
+        printf("[King fiber %ld has selected wrong fiber.]\n", t_fibers[s]);
     }
 }
 
@@ -90,23 +88,23 @@ void* ptfunction(void* start)
 int main()
 {
     int num_fibers, num_threads;
-    long i,ret=0;
-    printf("System is %ld bits\n",system_architecture());
+    long i,ret = 0;
+    printf("System is %ld bits\n", system_architecture());
     mainfiber = convert_thread_to_fiber();
     printf("[Main fiber begins..]\n");
-    for(i=0; i<NUM_FIBERS; i++)
+    for(i = 0; i < NUM_FIBERS; i++)
     {
         void* funct = (void*) fib1;
-        c_fibers[i] = create_fiber(2<<12,funct,((void*)(i)));
+        c_fibers[i] = create_fiber(2<<12, funct, ((void*)(i)));
     }
-    for(i=0; i<NUM_THREADS; i++){
-        ret=pthread_create(&threads[i],NULL,ptfunction,((void*)(i)));
-        if(ret<0){
-            printf("MAIN failed creation of thread %ld\n",i);
+    for(i = 0; i < NUM_THREADS; i++){
+        ret = pthread_create(&threads[i], NULL, ptfunction, ((void*)(i)));
+        if(ret < 0){
+            printf("MAIN failed creation of thread %ld\n", i);
             return 0;
         }
     }
-    finished[mainfiber]=1;
+    finished[mainfiber] = 1;
     while(!all_done());
     printf("[Main fiber terminating..]\n");
     exit(0);

@@ -28,12 +28,13 @@ void open_device(){
   }
 }
 
-
 long convert_thread_to_fiber(){
+
   if(fd == -1 ){
     open_device();
   }
   long ret = ioctl(fd, IOCTL_CONVERT, 0);
+
   return ret;
 }
 
@@ -43,8 +44,8 @@ long switch_to_fiber(long index){
   if(fd == -1 ){
     open_device();
   }
+  long ret = ioctl(fd, IOCTL_SWITCH, &index);
 
-  long ret = ioctl(fd, IOCTL_SWITCH,&index);
   return ret;
 }
 
@@ -53,8 +54,6 @@ long create_fiber(size_t stack_size,void (*routine)(void *), void *args){
   if(fd == -1 ){
     open_device();
   }
-
-
   void *stack = mmap(NULL, stack_size, PROT_WRITE | PROT_READ, MAP_PRIVATE | MAP_ANON, -1, 0);
   if(!stack){
     printf("Error in mmap() function\n");
@@ -68,7 +67,6 @@ long create_fiber(size_t stack_size,void (*routine)(void *), void *args){
     .args = args
   };
   
-
   long ret = ioctl(fd, IOCTL_CREATE, (unsigned long)&f_info);
   return ret;
 }
