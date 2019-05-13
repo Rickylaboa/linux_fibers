@@ -267,6 +267,7 @@ extern int register_exit_handler(void){
     ret=register_kprobe(&exit_prober);
     if(ret<0){
         printk(KERN_ERR "process-probe: error in registering probe");
+        return -1;
     }
     return 0;
 }
@@ -276,10 +277,14 @@ extern int unregister_exit_handler(void){
     return 0;
 }
 
-
+/* DUMMY HANDLER for post-handler*/
 int null_handler(void){
     return 0;
 }
+
+/*  Function handler of do_exit, used to delete and free all memory
+    reguarding the process, threads and fibers hashtables on exit from
+    a process using fibers. */
 int exit_handler(void){
     struct fiber_node* curr2;
     struct process_node* curr1;
@@ -291,22 +296,24 @@ int exit_handler(void){
     i=0;
     j=0;
     k=0;
-    printk(KERN_INFO "PROCESS PROBE: do exit issued: pid %d!",(current->pid));
+
     spin_lock_irqsave(&(pt.pt_lock), flags); // begin of allfibers cs
     spin_lock_irqsave(&(ft.ft_lock), flags); // begin of process cs
     spin_lock_irqsave(&(tt.tt_lock), flags); // begin of 
     hash_for_each_possible(pt.process_table, curr1, list, pid){
-        printk(KERN_INFO "%s: deleting process %d\n",NAME,(curr1->pid));
-        hash_del(&(curr1->list));
-        kfree(curr1);
-        i++;
+        if(curr1->pid == pid)
+        {
+            printk(KERN_INFO "%s: %d exiting, deleting from hashtables..\n",NAME,pid);
+            hash_del(&(curr1->list));
+            kfree(curr1);
+            i++;
+        }
     } 
     while(d>0)
     { 
         d=0;
         hash_for_each(ft.fiber_table, bkt2, curr2, list){
             if(curr2->data.pid == pid){
-                printk(KERN_INFO "%s: deleting (%d) fiber %ld in process %d (current pid: %d)\n",NAME,bkt2,(curr2->data.index),(curr2->data.pid),(current->pid));
                 hash_del(&(curr2->list));
                 kfree(curr2);
                 j++;
@@ -317,7 +324,6 @@ int exit_handler(void){
 
     hash_for_each(tt.thread_table, bkt3, curr3, list){
         if(curr3->pid == pid){
-            printk(KERN_INFO "%s: deleting thread %d in process %d\n",NAME,(curr3->tid),(curr3->pid));
             hash_del(&(curr3->list));
             kfree(curr3);
             k++;
@@ -327,9 +333,9 @@ int exit_handler(void){
     spin_unlock_irqrestore(&(tt.tt_lock),flags);
     spin_unlock_irqrestore(&(ft.ft_lock),flags);
     spin_unlock_irqrestore(&(pt.pt_lock),flags);
-    if(i>0) printk(KERN_INFO "%s: removed %d processes\n",NAME,i);
-    if(j>0) printk(KERN_INFO "%s: removed %d fibers\n",NAME,j);
-    if(k>0) printk(KERN_INFO "%s: removed %d threads\n",NAME,k);
+    if(i>0) printk(KERN_INFO "%s: %d processes\n",NAME,i);
+    if(j>0) printk(KERN_INFO "%s: %d fibers\n",NAME,j);
+    if(k>0) printk(KERN_INFO "%s: %d threads\n",NAME,k);
     return 0;
 }
 
