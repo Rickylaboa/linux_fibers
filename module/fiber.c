@@ -25,7 +25,9 @@ static struct miscdevice mdev = {
 int init_module(void){
 
   int ret = misc_register(&mdev);
-  init_hashtables();  
+  init_hashtables(); 
+  register_exit_handler();
+
   if(ret != 0){
     printk(KERN_ERR "%s: Error in misc_register() function\n", NAME);
   }
@@ -34,8 +36,8 @@ int init_module(void){
 }
 
 void cleanup_module(void){
-
   free_all_tables();
+  unregister_exit_handler();
   misc_deregister(&mdev);
 }
 
@@ -60,11 +62,9 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
 	switch(cmd)
 	{
 		case IOCTL_CONVERT: // Userspace requires to convert a thread to fiber
-			printk(KERN_INFO "%s: CONVERT\n", NAME);
 			return fiber_convert();
 
 		case IOCTL_CREATE: // Userspace requires to create a new fiber
-			printk(KERN_INFO "%s: CREATE\n", NAME);
       nfib = (struct fiber_info*) kmalloc(sizeof(struct fiber_info), __GFP_HIGH);
       if(nfib==NULL){
         printk(KERN_ERR "%s: error in kmalloc()\n", NAME);
@@ -74,7 +74,6 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
 			return fiber_create((unsigned long) nfib->routine, (unsigned long) nfib->stack, (unsigned long) nfib->args);
 
 		case IOCTL_SWITCH: // Userspace requires to switch from fiber x to fiber y
-			printk(KERN_INFO "%s: SWITCH\n", NAME);
       index = kmalloc(sizeof(long), __GFP_HIGH);
       if(!index){
         printk(KERN_ERR "%s: Error in kmalloc()\n", NAME);

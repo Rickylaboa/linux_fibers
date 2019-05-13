@@ -6,7 +6,7 @@
 
 
 #define NUM_THREADS 2
-#define NUM 30
+#define NUM 10
 
 long nextFiber[4];
 int ret[4];

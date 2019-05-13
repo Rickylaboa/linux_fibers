@@ -16,6 +16,9 @@
 #include<linux/syscalls.h>
 #include<linux/spinlock.h> 
 #include<linux/hashtable.h>
+#include <linux/kprobes.h>
+
+
 
 #define FIBER_BKT 8
 #define PROCESS_BKT 15
@@ -45,6 +48,7 @@ struct process_node{
 };
 
 struct thread_node{
+    int pid;
     int tid;
     long active_fiber_index; 
     struct hlist_node list;
@@ -76,3 +80,8 @@ inline int is_a_fiber(void);
 extern void init_hashtables(void);
 extern void remove_fiber(long index);
 extern void free_all_tables(void);
+
+extern int register_exit_handler(void);
+extern int unregister_exit_handler(void);
+int null_handler(void);
+int exit_handler(void);

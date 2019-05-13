@@ -3,6 +3,8 @@
 static struct fiber_hash ft;
 static struct process_hash pt;
 static struct thread_hash tt;
+static struct kprobe exit_prober;
+
 
 
 /*  This function initializes the three hashtables needed
@@ -155,6 +157,7 @@ inline int add_thread(int tid,long active_fiber_index){
         printk(KERN_ERR "%s: error in kmalloc()\n", NAME);
         return -1;
     }
+    elem->pid = current->parent->pid;
     elem->tid =  tid;
     elem->active_fiber_index = active_fiber_index;
     key = tid;
@@ -252,3 +255,75 @@ extern void free_all_tables(void){
     spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of cs
     printk(KERN_INFO "%s: TT has issued kfree on %d elements \n", NAME, i);
 }
+
+extern int register_exit_handler(void){
+    int ret;
+    exit_prober.symbol_name  = "do_exit";
+    exit_prober.pre_handler = (void*) null_handler;
+    exit_prober.post_handler = (void*) exit_handler;
+    printk(KERN_INFO "process-probe: Registering process kprobe\n");
+
+    ret=register_kprobe(&exit_prober);
+    if(ret<0){
+        printk(KERN_ERR "process-probe: error in registering probe");
+    }
+    return 0;
+}
+
+extern int unregister_exit_handler(void){
+    unregister_kprobe(&exit_prober);
+    return 0;
+}
+
+
+int null_handler(void){
+    return 0;
+}
+int exit_handler(void){
+    struct fiber_node* curr2;
+    struct process_node* curr1;
+    struct thread_node* curr3;
+    int bkt2, bkt3,pid;
+    unsigned long flags;
+    int i,j,k;
+    pid = current->parent->pid;
+    i=0;
+    j=0;
+    k=0;
+    printk(KERN_INFO "PROCESS PROBE: do exit issued: pid %d!; thread %d\n",(current->parent->pid),(current->pid));
+    spin_lock_irqsave(&(pt.pt_lock), flags); // begin of allfibers cs
+    spin_lock_irqsave(&(ft.ft_lock), flags); // begin of process cs
+    spin_lock_irqsave(&(tt.tt_lock), flags); // begin of 
+    hash_for_each_possible(pt.process_table, curr1, list, pid){
+        if(pid != curr1->pid) continue;
+        hash_for_each(ft.fiber_table, bkt2, curr2, list){
+            if(curr2->data.pid == pid){
+                printk(KERN_INFO "%s: deleting fiber %ld in process %d\n",NAME,(curr2->data.index),(curr2->data.pid));
+                hash_del(&(curr2->list));
+                kfree(curr2);
+                j++;
+            }
+        }
+
+        hash_for_each(tt.thread_table, bkt3, curr3, list){
+            if(curr3->pid == pid){
+                printk(KERN_INFO "%s: deleting thread %d in process %d\n",NAME,(curr3->tid),(curr3->pid));
+                hash_del(&(curr3->list));
+                kfree(curr3);
+                k++;
+            }
+        }
+        printk(KERN_INFO "%s: deleting process %d\n",NAME,(curr1->pid));
+        hash_del(&(curr1->list));
+        kfree(curr1);
+        i++;
+    }  
+    spin_unlock_irqrestore(&(tt.tt_lock),flags);
+    spin_unlock_irqrestore(&(ft.ft_lock),flags);
+    spin_unlock_irqrestore(&(pt.pt_lock),flags);
+    if(i>0) printk(KERN_INFO "%s: removed %d processes\n",NAME,i);
+    if(j>0) printk(KERN_INFO "%s: removed %d fibers\n",NAME,j);
+    if(k>0) printk(KERN_INFO "%s: removed %d threads\n",NAME,k);
+    return 0;
+}
+
