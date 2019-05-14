@@ -88,11 +88,12 @@ int fls_free(long index){
 }
 
 void* fls_get_value(long index){
+  void* lret = 0;
   if(fd == -1 ){
     open_device();
   }
-  void* ret =(void*) ioctl(fd, IOCTL_FLS_GET, &index);
-  return ret;
+  lret = (void*) (long) ioctl(fd, IOCTL_FLS_GET, &index);
+  return lret;
 }
 
 int fls_set_value(long index,void* value){
