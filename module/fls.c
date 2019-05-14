@@ -1,6 +1,7 @@
 #include <fls.h>
 
 long fls_alloc(void){
+    
     struct fiber_struct* f = get_fiber(current_fiber());
     struct fls_list *first;
     struct fls_data *data;
@@ -13,7 +14,6 @@ long fls_alloc(void){
     }
     if(!first){
         index = ++f->max_fls_index;
-
     }
     else{
 
@@ -44,6 +44,7 @@ int fls_free(long index){
         first->index = index;
         list_add(&(first->list), &(f->free_fls_indexes->list));
     }
+
     return 0;
 }
 void *fls_get_value(long index){
