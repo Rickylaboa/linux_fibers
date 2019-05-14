@@ -38,6 +38,7 @@ struct fiber_struct{
     long index;
     long max_fls_index;
     struct list_head free_fls_indexes;
+    struct fls_data fiber_local_storage;
     struct pt_regs registers;
     struct fpu fpu_registers;
 };
