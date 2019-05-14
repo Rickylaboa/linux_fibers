@@ -19,7 +19,6 @@
 #include <linux/kprobes.h>
 
 
-
 #define FIBER_BKT 8
 #define PROCESS_BKT 15
 #define THREAD_BKT 15
@@ -77,11 +76,10 @@ inline long add_fiber(struct fiber_struct* f);
 inline int add_thread(int tid,long active_fiber_index);
 inline int set_thread(int tid,long active_fiber_index);
 inline int is_a_fiber(void);
-extern void init_hashtables(void);
-extern void remove_fiber(long index);
-extern void free_all_tables(void);
-
 extern int register_exit_handler(void);
 extern int unregister_exit_handler(void);
 int null_handler(void);
 int exit_handler(void);
+extern void init_hashtables(void);
+extern void remove_fiber(long index);
+extern void free_all_tables(void);

@@ -264,8 +264,8 @@ extern int register_exit_handler(void){
     exit_prober.post_handler = (void*) null_handler;
     printk(KERN_INFO "process-probe: Registering process kprobe\n");
 
-    ret=register_kprobe(&exit_prober);
-    if(ret<0){
+    ret = register_kprobe(&exit_prober);
+    if(ret < 0){
         printk(KERN_ERR "process-probe: error in registering probe");
         return -1;
     }
@@ -289,13 +289,13 @@ int exit_handler(void){
     struct fiber_node* curr2;
     struct process_node* curr1;
     struct thread_node* curr3;
-    int bkt2, bkt3,pid,d=1;
+    int bkt2, bkt3,pid,d = 1;
     unsigned long flags;
     int i,j,k;
     pid = current->pid;
-    i=0;
-    j=0;
-    k=0;
+    i = 0;
+    j = 0;
+    k = 0;
 
     spin_lock_irqsave(&(pt.pt_lock), flags); // begin of allfibers cs
     spin_lock_irqsave(&(ft.ft_lock), flags); // begin of process cs
@@ -309,9 +309,9 @@ int exit_handler(void){
             i++;
         }
     } 
-    while(d>0)
+    while(d > 0)
     { 
-        d=0;
+        d = 0;
         hash_for_each(ft.fiber_table, bkt2, curr2, list){
             if(curr2->data.pid == pid){
                 hash_del(&(curr2->list));
@@ -333,9 +333,9 @@ int exit_handler(void){
     spin_unlock_irqrestore(&(tt.tt_lock),flags);
     spin_unlock_irqrestore(&(ft.ft_lock),flags);
     spin_unlock_irqrestore(&(pt.pt_lock),flags);
-    if(i>0) printk(KERN_INFO "%s: %d processes\n",NAME,i);
-    if(j>0) printk(KERN_INFO "%s: %d fibers\n",NAME,j);
-    if(k>0) printk(KERN_INFO "%s: %d threads\n",NAME,k);
+    if(i > 0) printk(KERN_INFO "%s: %d processes\n", NAME, i);
+    if(j > 0) printk(KERN_INFO "%s: %d fibers\n", NAME, j);
+    if(k > 0) printk(KERN_INFO "%s: %d threads\n", NAME, k);
     return 0;
 }
 
