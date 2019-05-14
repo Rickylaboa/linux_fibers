@@ -1,4 +1,6 @@
 #include "fiber.h"
+#include "fls.h"
+
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Fabio Marra <fab92mar@gmail.com> & Riccardo Valentini <valentiniriccardo05@gmail.com>");

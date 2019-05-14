@@ -1,3 +1,6 @@
+#ifndef CONSTANT_H // Fabio Marra's copyright
+#define CONSTANT_H
+
 #define ACTIVE_FIBER 1
 #define INACTIVE_FIBER 0
 
@@ -15,3 +18,5 @@ struct fiber_info { // data to copy from user in order to create a new fiber
   void (*routine)(void *);
   void *args;
 };
+
+#endif

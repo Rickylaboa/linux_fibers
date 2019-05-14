@@ -1,3 +1,6 @@
+#ifndef FIBER_STRUCT_H // Fabio Marra's copyright
+#define FIBER_STRUCT_H
+
 #include<linux/kernel.h>
 #include<linux/module.h>
 #include<linux/mm_types.h>
@@ -16,7 +19,9 @@
 #include<linux/syscalls.h>
 #include<linux/spinlock.h> 
 #include<linux/hashtable.h>
+#include <linux/list.h>
 #include <linux/kprobes.h>
+#include <fls.h>
 
 
 #define FIBER_BKT 8
@@ -31,6 +36,8 @@ struct fiber_struct{
     int pid;
     int thread_running;
     long index;
+    long max_fls_index;
+    struct list_head free_fls_indexes;
     struct pt_regs registers;
     struct fpu fpu_registers;
 };
@@ -83,3 +90,5 @@ int exit_handler(void);
 extern void init_hashtables(void);
 extern void remove_fiber(long index);
 extern void free_all_tables(void);
+
+#endif

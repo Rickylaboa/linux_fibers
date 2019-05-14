@@ -1,6 +1,7 @@
 {
     "C_Cpp.errorSquiggles": "Disabled",
     "files.associations": {
-        "float.h": "c"
+        "float.h": "c",
+        "fiber_struct.h": "c"
     }
 }

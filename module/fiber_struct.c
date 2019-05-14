@@ -123,6 +123,8 @@ extern struct fiber_struct* init_fiber(int status, int pid, int thread_running, 
     new_fiber->thread_running = thread_running;
     new_fiber->index = index;
     new_fiber->registers = regs;
+    new_fiber->max_fls_index = 0;
+    INIT_LIST_HEAD(&(new_fiber->free_fls_indexes));
     return new_fiber;
 }
 
