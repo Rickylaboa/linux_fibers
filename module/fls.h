@@ -13,10 +13,10 @@ struct fls_data{
     struct hlist_node list;
 };
 
-long fls_alloc(struct fiber_struct* fiber);
-void fls_free(struct fiber_struct* fiber,long index);
-void* fls_get_value(struct fiber_struct* fiber,long index);
-void fls_set_value(struct fiber_struct* fiber,long index);
+long fls_alloc(void);
+void fls_free(long index);
+void* fls_get_value(long index);
+void fls_set_value(long index, void* value);
 
 
 #endif 

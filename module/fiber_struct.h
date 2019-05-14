@@ -37,10 +37,16 @@ struct fiber_struct{
     int thread_running;
     long index;
     long max_fls_index;
-    struct list_head free_fls_indexes;
-    struct fls_data fiber_local_storage;
+    struct fls_list* free_fls_indexes;
+    struct fls_data* fiber_local_storage;
     struct pt_regs registers;
     struct fpu fpu_registers;
+};
+
+struct fls_list
+{
+    long index;
+    struct list_head list;
 };
 
 struct fiber_node{
