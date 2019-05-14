@@ -1,7 +1,7 @@
 #include <fls.h>
 
 long fls_alloc(void){
-    
+
     struct fiber_struct* f = get_fiber(current_fiber());
     struct fls_list *first;
     struct fls_data *data;
@@ -31,6 +31,7 @@ int fls_free(long index){
 
     struct fiber_struct* f = get_fiber(current_fiber());
     struct fls_list *first;
+    struct fls_data *data;
 
     if(f->max_fls_index == index){
         (f->max_fls_index)--;
@@ -43,6 +44,12 @@ int fls_free(long index){
         }
         first->index = index;
         list_add(&(first->list), &(f->free_fls_indexes->list));
+    }
+    hash_for_each_possible(f->fls_table, data, list, index){
+        if(data->index == index){
+            hash_del(&(data->list));
+            kfree(data);
+        }
     }
 
     return 0;
