@@ -16,14 +16,13 @@ long fls_alloc(void){
         index = ++f->max_fls_index;
     }
     else{
-
         index = first->index;
         list_del(&(first->list));
 
     }
-
+    data->index = index; 
+    data->value = 0; 
     hash_add(f->fls_table, &(data->list), index);
-
     return index;
 }
 
@@ -58,7 +57,7 @@ void *fls_get_value(long index){
 
     struct fiber_struct* f = get_fiber(current_fiber());
     struct fls_data *data;
-
+    
     hash_for_each_possible(f->fls_table, data, list, index){
         if(data->index == index){
             return data->value;
@@ -71,7 +70,6 @@ void fls_set_value(long index, void* value){
 
     struct fiber_struct* f = get_fiber(current_fiber());
     struct fls_data *data;
-
     hash_for_each_possible(f->fls_table, data, list, index){
         if(data->index == index){
             data->value = value;

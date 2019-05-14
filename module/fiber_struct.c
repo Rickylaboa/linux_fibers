@@ -6,6 +6,32 @@ static struct thread_hash tt;
 static struct kprobe exit_prober;
 
 
+static int fls_free_with_struct(struct fiber_struct *f, long index){
+
+    struct fls_list *first;
+    struct fls_data *data;
+
+    if(f->max_fls_index == index){
+        (f->max_fls_index)--;
+    }
+    else {
+        first = kmalloc(sizeof(struct fls_list), __GFP_HIGH);
+        if(!first){
+            printk(KERN_ERR "%s: Error in kmalloc()\n", NAME);
+            return -1;
+        }
+        first->index = index;
+        list_add(&(first->list), &(f->free_fls_indexes->list));
+    }
+    hash_for_each_possible(f->fls_table, data, list, index){
+        if(data->index == index){
+            hash_del(&(data->list));
+            kfree(data);
+        }
+    }
+
+    return 0;
+}
 
 /*  This function initializes the three hashtables needed
     to store the correct informations about fibers and their
@@ -113,17 +139,29 @@ inline long get_new_index(void){
     fullfills it with the fields of a fiber. */
 extern struct fiber_struct* init_fiber(int status, int pid, int thread_running, long index, struct pt_regs regs){
 
-    struct fiber_struct* new_fiber =  kmalloc(sizeof(struct fiber_struct), __GFP_HIGH);
+    struct fiber_struct* new_fiber;
+    struct fls_list* new_fls_list;
+    new_fiber =  kmalloc(sizeof(struct fiber_struct), __GFP_HIGH);
     if(new_fiber == NULL){
         printk(KERN_ERR "%s: error in kmalloc\n", NAME);
         return NULL;   
     }
+
+    new_fls_list  =  kmalloc(sizeof(struct fls_list), __GFP_HIGH);
+    if(new_fls_list == NULL){
+        printk(KERN_ERR "%s: error in kmalloc\n", NAME);
+        return NULL;   
+    }
+
     new_fiber->status = status;
     new_fiber->pid = pid;
     new_fiber->thread_running = thread_running;
     new_fiber->index = index;
     new_fiber->registers = regs;
     new_fiber->max_fls_index = 0;
+    new_fiber->free_fls_indexes = new_fls_list;
+    hash_init(new_fiber->fls_table); // INIT FLS HASH TABLE
+    printk(KERN_INFO "%s: initializing list_head \n",NAME);
     INIT_LIST_HEAD(&(new_fiber->free_fls_indexes->list));
     return new_fiber;
 }
@@ -293,11 +331,14 @@ int exit_handler(void){
     struct thread_node* curr3;
     int bkt2, bkt3,pid,d = 1;
     unsigned long flags;
-    int i,j,k;
+    int i,j,k, h;
+    long counter;
     pid = current->pid;
     i = 0;
     j = 0;
     k = 0;
+    h = 0;
+    counter=0;
 
     spin_lock_irqsave(&(pt.pt_lock), flags); // begin of allfibers cs
     spin_lock_irqsave(&(ft.ft_lock), flags); // begin of process cs
@@ -317,9 +358,14 @@ int exit_handler(void){
         hash_for_each(ft.fiber_table, bkt2, curr2, list){
             if(curr2->data.pid == pid){
                 hash_del(&(curr2->list));
-                kfree(curr2);
                 j++;
                 d++;
+                for(counter=0; counter < curr2->data.max_fls_index; counter++)
+                {
+                    fls_free_with_struct(&(curr2->data), counter);
+                    h++;
+                }
+                kfree(curr2);
             }
         }
     }
@@ -338,6 +384,10 @@ int exit_handler(void){
     if(i > 0) printk(KERN_INFO "%s: %d processes\n", NAME, i);
     if(j > 0) printk(KERN_INFO "%s: %d fibers\n", NAME, j);
     if(k > 0) printk(KERN_INFO "%s: %d threads\n", NAME, k);
+    if(h > 0) printk(KERN_INFO "%s: %d fls stuff\n", NAME, h);
+
     return 0;
 }
+
+
 

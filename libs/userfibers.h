@@ -70,3 +70,41 @@ long create_fiber(size_t stack_size,void (*routine)(void *), void *args){
   long ret = ioctl(fd, IOCTL_CREATE, (unsigned long)&f_info);
   return ret;
 }
+
+long fls_alloc(){
+  if(fd == -1 ){
+    open_device();
+  }
+  long ret = ioctl(fd, IOCTL_FLS_ALLOC, NULL);
+  return ret;
+}
+
+int fls_free(long index){
+  if(fd == -1 ){
+    open_device();
+  }
+  long ret = ioctl(fd, IOCTL_FLS_FREE, &index);
+  return ret;
+}
+
+void* fls_get_value(long index){
+  if(fd == -1 ){
+    open_device();
+  }
+  void* ret =(void*) ioctl(fd, IOCTL_FLS_GET, &index);
+  return ret;
+}
+
+int fls_set_value(long index,void* value){
+  if(fd == -1 ){
+    open_device();
+  }
+
+  struct fls_info fls = {
+    .index = index,
+    .value = value
+  };
+  int ret = ioctl(fd, IOCTL_FLS_SET, &fls);
+  return ret;
+}
+

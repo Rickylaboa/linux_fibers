@@ -59,6 +59,7 @@ static int hit_release(struct inode *inode, struct file *file){    // to do...
 static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user ptr){
 
   struct fiber_info *nfib;
+  struct fls_info *fls;
   long *index;
 
 	switch(cmd)
@@ -89,11 +90,31 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
 			return fls_alloc();
     
     case IOCTL_FLS_FREE: // Userspace requires to switch from fiber x to fiber y
-      return fls_free(0);
+      index = kmalloc(sizeof(long), __GFP_HIGH);
+      if(!index){
+        printk(KERN_ERR "%s: Error in kmalloc()\n", NAME);
+        return -1;
+      }
+      copy_from_user(index,(long *)ptr, sizeof(long));
+      return fls_free(*index);
+
     case IOCTL_FLS_GET:
-      return (long) fls_get_value(0);
+      index = kmalloc(sizeof(long), __GFP_HIGH);
+      if(!index){
+        printk(KERN_ERR "%s: Error in kmalloc()\n", NAME);
+        return -1;
+      }
+      copy_from_user(index,(long *)ptr, sizeof(long));
+      return (long) fls_get_value(*index);
+
     case IOCTL_FLS_SET:
-      fls_set_value(0,(void*) 0);
+      fls = kmalloc(sizeof(struct fls_info),__GFP_HIGH);
+      if(!fls){
+        printk(KERN_ERR "%s: Error in kmalloc()\n", NAME);
+        return -1;
+      }
+      copy_from_user(fls,(long *)ptr, sizeof(struct fls_info));
+      fls_set_value(fls->index,(void*) fls->value);
       return 0;
 
 		default:

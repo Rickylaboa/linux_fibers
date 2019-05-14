@@ -24,4 +24,10 @@ struct fiber_info { // data to copy from user in order to create a new fiber
   void *args;
 };
 
+struct fls_info{
+  long index;
+  void* value;
+};
+
+
 #endif
