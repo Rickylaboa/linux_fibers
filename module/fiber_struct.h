@@ -38,7 +38,7 @@ struct fiber_struct{
     long index;
     long max_fls_index;
     struct fls_list* free_fls_indexes;
-    struct fls_data* fiber_local_storage;
+    DECLARE_HASHTABLE(fls_table, 5);
     struct pt_regs registers;
     struct fpu fpu_registers;
 };

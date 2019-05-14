@@ -14,8 +14,8 @@ struct fls_data{
 };
 
 long fls_alloc(void);
-void fls_free(long index);
-void* fls_get_value(long index);
+int fls_free(long index);
+void *fls_get_value(long index);
 void fls_set_value(long index, void* value);
 
 

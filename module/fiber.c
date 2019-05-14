@@ -89,8 +89,7 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
 			return fls_alloc();
     
     case IOCTL_FLS_FREE: // Userspace requires to switch from fiber x to fiber y
-      fls_free(0);
-      return 0;
+      return fls_free(0);
     case IOCTL_FLS_GET:
       return (long) fls_get_value(0);
     case IOCTL_FLS_SET:
