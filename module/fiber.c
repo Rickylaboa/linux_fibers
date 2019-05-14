@@ -1,5 +1,5 @@
-#include "fiber.h"
-#include "fls.h"
+#include <includes/fiber.h>
+#include <includes/fls.h>
 
 
 MODULE_LICENSE("GPL");
@@ -105,7 +105,7 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
         return -1;
       }
       copy_from_user(index,(long *)ptr, sizeof(long));
-      return fls_get_value(*index);
+      return (long) fls_get_value(*index);
 
     case IOCTL_FLS_SET:
       fls = kmalloc(sizeof(struct fls_info),__GFP_HIGH);

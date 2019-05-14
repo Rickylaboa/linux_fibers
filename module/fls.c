@@ -1,5 +1,10 @@
-#include <fls.h>
+#include <includes/fls.h>
 
+/*  This function retrieves the current fiber, checking if the
+    list of freed indexes contains a fresh index. If so, this is
+    removed and assigned to the new fls data, otherwise
+    the max_fls_index is incremented, the data are allocated and the
+    fls index is returned to userspace. */
 long fls_alloc(void){
 
     struct fiber_struct* f = get_fiber(current_fiber());
@@ -26,6 +31,9 @@ long fls_alloc(void){
     return index;
 }
 
+/*  This function frees an index of the fls, adding this to
+    the free list only if it is the max index. Then returns 0
+    in case of success. */
 int fls_free(long index){
 
     struct fiber_struct* f = get_fiber(current_fiber());
@@ -53,6 +61,9 @@ int fls_free(long index){
 
     return 0;
 }
+
+/*  This function retrieves a data by index, searching it
+    in the corresponding hash table. */
 void *fls_get_value(long index){
 
     struct fiber_struct* f = get_fiber(current_fiber());
@@ -66,6 +77,10 @@ void *fls_get_value(long index){
 
     return NULL;
 }
+
+/*  This function sets a new value for the passed index,
+    searching the current value in the hash table and 
+    replacing it with the passed value. */
 void fls_set_value(long index, void* value){
 
     struct fiber_struct* f = get_fiber(current_fiber());

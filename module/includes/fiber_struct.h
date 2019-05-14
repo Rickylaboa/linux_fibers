@@ -21,7 +21,7 @@
 #include<linux/hashtable.h>
 #include <linux/list.h>
 #include <linux/kprobes.h>
-#include <fls.h>
+#include "fls.h"
 
 
 #define FIBER_BKT 8

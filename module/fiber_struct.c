@@ -1,4 +1,4 @@
-#include <fiber_struct.h>
+#include <includes/fiber_struct.h>
 
 static struct fiber_hash ft;
 static struct process_hash pt;
@@ -6,32 +6,7 @@ static struct thread_hash tt;
 static struct kprobe exit_prober;
 
 
-static int fls_free_with_struct(struct fiber_struct *f, long index){
 
-    struct fls_list *first;
-    struct fls_data *data;
-
-    if(f->max_fls_index == index){
-        (f->max_fls_index)--;
-    }
-    else {
-        first = kmalloc(sizeof(struct fls_list), __GFP_HIGH);
-        if(!first){
-            printk(KERN_ERR "%s: Error in kmalloc()\n", NAME);
-            return -1;
-        }
-        first->index = index;
-        list_add(&(first->list), &(f->free_fls_indexes->list));
-    }
-    hash_for_each_possible(f->fls_table, data, list, index){
-        if(data->index == index){
-            hash_del(&(data->list));
-            kfree(data);
-        }
-    }
-
-    return 0;
-}
 
 /*  This function initializes the three hashtables needed
     to store the correct informations about fibers and their
@@ -321,6 +296,38 @@ extern int unregister_exit_handler(void){
 int null_handler(void){
     return 0;
 }
+
+/*  This function is the same of fls free, but it is an emergency
+    and occurs only if the user program does not free each fls
+    index before exiting. */
+static int fls_free_with_struct(struct fiber_struct *f, long index){
+
+    struct fls_list *first;
+    struct fls_data *data;
+
+    if(f->max_fls_index == index){
+        (f->max_fls_index)--;
+    }
+    else {
+        first = kmalloc(sizeof(struct fls_list), __GFP_HIGH);
+        if(!first){
+            printk(KERN_ERR "%s: Error in kmalloc()\n", NAME);
+            return -1;
+        }
+        first->index = index;
+        list_add(&(first->list), &(f->free_fls_indexes->list));
+    }
+    hash_for_each_possible(f->fls_table, data, list, index){
+        if(data->index == index){
+            hash_del(&(data->list));
+            kfree(data);
+        }
+    }
+
+    return 0;
+}
+
+
 
 /*  Function handler of do_exit, used to delete and free all memory
     reguarding the process, threads and fibers hashtables on exit from
