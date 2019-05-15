@@ -61,11 +61,14 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
   struct fiber_info *nfib;
   struct fls_info *fls;
   long *index;
+  long ret;
 
 	switch(cmd)
 	{
 		case IOCTL_CONVERT: // Userspace requires to convert a thread to fiber
-			return fiber_convert();
+			ret = fiber_convert();
+      //printk(KERN_INFO "%s: convert\n",NAME);
+      return ret;
 
 		case IOCTL_CREATE: // Userspace requires to create a new fiber
       nfib = (struct fiber_info*) kmalloc(sizeof(struct fiber_info), __GFP_HIGH);
@@ -74,9 +77,11 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
         return -1;
       }
       copy_from_user(nfib,(struct fiber_info*)ptr,sizeof(struct fiber_info));
-			return fiber_create((unsigned long) nfib->routine, (unsigned long) nfib->stack, (unsigned long) nfib->args);
-
-		case IOCTL_SWITCH: // Userspace requires to switch from fiber x to fiber y
+			ret = fiber_create((unsigned long) nfib->routine, (unsigned long) nfib->stack, (unsigned long) nfib->args);
+      //printk(KERN_INFO "%s: create\n",NAME);
+      return ret;
+		
+    case IOCTL_SWITCH: // Userspace requires to switch from fiber x to fiber y
       index = kmalloc(sizeof(long), __GFP_HIGH);
       if(!index){
         printk(KERN_ERR "%s: Error in kmalloc()\n", NAME);
@@ -84,20 +89,25 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
       }
 
       copy_from_user(index,(long *)ptr, sizeof(long));
-      printk(KERN_INFO "%s: switch to %ld\n", NAME, (*index));
-			return fiber_switch(*index);
+			ret = fiber_switch(*index);
+      //printk(KERN_INFO "%s: switch to %ld\n",NAME,(*index));
+      return ret;
 		
     case IOCTL_FLS_ALLOC: // Userspace requires to switch from fiber x to fiber y
-			return fls_alloc();
-    
+			ret = fls_alloc();
+      //printk(KERN_INFO "%s: fls alloc\n",NAME);
+      return ret;
+
     case IOCTL_FLS_FREE: // Userspace requires to switch from fiber x to fiber y
       index = kmalloc(sizeof(long), __GFP_HIGH);
       if(!index){
-        printk(KERN_ERR "%s: Error in kmalloc()\n", NAME);
+        //printk(KERN_ERR "%s: Error in kmalloc()\n", NAME);
         return -1;
       }
       copy_from_user(index,(long *)ptr, sizeof(long));
-      return fls_free(*index);
+      ret = fls_free(*index);
+      //printk(KERN_INFO "%s: fls free\n",NAME);
+      return ret;
 
     case IOCTL_FLS_GET:
       fls = kmalloc(sizeof(struct fls_info),__GFP_HIGH);
@@ -117,6 +127,7 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
         return -1;
       }
       copy_from_user(fls,(long *)ptr, sizeof(struct fls_info));
+      //printk(KERN_INFO "%s: fls set\n",NAME);
       fls_set_value(fls->index,(void*) fls->value);
       return 0;
 

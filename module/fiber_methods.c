@@ -42,14 +42,11 @@ extern long fiber_convert(void){
     context, both via memcpy. Before returning, it sets the new active fiber for the 
     current thread. */
 extern long fiber_switch(long index){
-
     struct pt_regs *regs;
     struct fiber_struct *curr_fiber;
     struct fiber_struct *next_fiber;
     long current_index;
     if(!is_a_fiber()) return -1; // If not a fiber, it must before issue a convert!
-
-
     current_index = current_fiber();
     regs = task_pt_regs(current);
     curr_fiber = get_fiber(current_index);
@@ -70,13 +67,12 @@ extern long fiber_switch(long index){
     memcpy(regs, &next_fiber->registers, sizeof(struct pt_regs));
     next_fiber->status = ACTIVE_FIBER;
 
-	/*fpu__save(&curr_fiber->fpu_registers);
-	preempt_disable();
-	fpu__restore(&next_fiber->fpu_registers);
-    preempt_enable();*/
+    preempt_disable();
+	fpu__save(&(curr_fiber->fpu_registers));
+	fpu__restore(&(next_fiber->fpu_registers));
+    preempt_enable();
 
     set_thread(current->pid, next_fiber->index);
-
     return 0;
 }
 
@@ -93,6 +89,9 @@ extern long fiber_alloc(int status, struct pt_regs regs){
         return -1;
     }
     new_fiber = init_fiber(status, (current->parent->pid), (current->pid), fiber_index, regs);
+    
+    printk(KERN_INFO "%s: saving fpu registers content.\n",NAME);
+    fpu__save(&(new_fiber->fpu_registers));
 
     add_fiber(new_fiber);
     return fiber_index;

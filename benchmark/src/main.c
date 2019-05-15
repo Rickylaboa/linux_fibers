@@ -57,6 +57,7 @@ static void main_loop(void *args) {
 	}
 
 	FlsSetValue(q_idx, malloc(sizeof(calqueue)));
+
 	calqueue_init((calqueue *)FlsGetValue(q_idx));
 	event = malloc(sizeof(msg_t));
 	event->type = INIT;
@@ -79,8 +80,10 @@ static void main_loop(void *args) {
 			fprintf(stderr, "Something went wrong! Fiber %d is getting data from fiber %d, which is impossible. Aborting...\n", id, event->receiver);
 			exit(EXIT_FAILURE);
 		}
-
-		ret = ProcessEvent(event, (lp_state_type *)FlsGetValue(state_idx), (calqueue *)FlsGetValue(q_idx));
+		
+		lp_state_type *state =(lp_state_type *)FlsGetValue(state_idx);
+		calqueue *q = (calqueue *)FlsGetValue(q_idx);
+		ret = ProcessEvent(event,state,q);
 						   
 		if(event->type == INIT) {
 			FlsSetValue(state_idx, ret);

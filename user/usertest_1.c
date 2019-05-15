@@ -13,6 +13,19 @@ int ret[4];
 
 pthread_t threads[NUM_THREADS];
 
+void float_function(float p1,float p2, float p3)
+{
+  float x = p1;
+  float y = p2;
+  float z = p3;
+  if(x<y && x>z){
+    sleep(1);
+    printf("{X is correct}\n");
+  }else{
+    printf("{Something strange happened with FPU}\n");
+  }
+}
+
 
 void slave4(void* arg)
 {
@@ -46,7 +59,6 @@ void slave3(void* arg)
   long index3 = _fls_alloc();
   long index4;
   printf("{Fiber 3, index values: %ld %ld %ld}\n",index1,index2,index3);
-
   _fls_set_value(index1,(void*)1);
   _fls_set_value(index2,(void*)2);
   _fls_set_value(index3,(void*)3);
@@ -65,7 +77,7 @@ void slave3(void* arg)
   while(1)
   {
     printf("{Fiber 3 ---->}\n");
-    sleep(1);
+    float_function(6.0030501,6.14536473,6);
     int ret = -1;
     while(ret < 0) ret = switch_to_fiber(nextFiber[1]);  }
 }
@@ -101,7 +113,7 @@ void slave2(void* arg)
   {
     printf("{Fiber 2, iteration: %d/%d}\n", i, NUM);
     printf("{Fiber 2 <----}\n");
-    sleep(1);
+    float_function(5.0030501,5.35436456345,5);
     switch_to_fiber(nextFiber[i%4]);
     i++;
   }
@@ -136,7 +148,7 @@ void slave1(void* arg)
   while(1)
   {
     printf("{Master 1 ---->}\n");
-    sleep(1);
+    float_function(2.00001,2.143543554,2);
     int ret = -1;
     while(ret < 0) ret = switch_to_fiber(nextFiber[1]);
   }
@@ -154,7 +166,7 @@ void* king_one(void* num)
   while(1)
   {
     printf("{Master 1 ---->}\n");
-    sleep(1);
+    float_function(3.00001,3.1435634453,3);
     int ret = -1;
     while(ret<0) ret = switch_to_fiber(nextFiber[1]);
   }
@@ -171,7 +183,7 @@ void* king_two(void* num)
   while(1)
   {
     printf("{Master 2 ---->}\n");
-    sleep(1);
+    float_function(4.00001,4.15345373453,4);
     int ret = -1;
     while(ret < 0) ret = switch_to_fiber(nextFiber[1]);
   }

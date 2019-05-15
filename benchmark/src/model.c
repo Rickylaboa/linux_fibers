@@ -98,6 +98,6 @@ long long ProcessEvent(msg_t *msg, lp_state_type *state, calqueue *q) {
 			fprintf(stdout, "PCS: Unknown event type! (me = %d - event type = %d)\n", me, msg->type);
 			abort();
 	}
-	
+	//printf("returning\n");
 	return ret;
 }
