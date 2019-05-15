@@ -65,7 +65,6 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
 	switch(cmd)
 	{
 		case IOCTL_CONVERT: // Userspace requires to convert a thread to fiber
-      printk(KERN_INFO "%s: convert\n", NAME);
 			return fiber_convert();
 
 		case IOCTL_CREATE: // Userspace requires to create a new fiber
@@ -75,7 +74,6 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
         return -1;
       }
       copy_from_user(nfib,(struct fiber_info*)ptr,sizeof(struct fiber_info));
-      printk(KERN_INFO "%s: create\n", NAME);
 			return fiber_create((unsigned long) nfib->routine, (unsigned long) nfib->stack, (unsigned long) nfib->args);
 
 		case IOCTL_SWITCH: // Userspace requires to switch from fiber x to fiber y

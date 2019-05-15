@@ -70,7 +70,6 @@ extern long fiber_switch(long index){
     memcpy(regs, &next_fiber->registers, sizeof(struct pt_regs));
     next_fiber->status = ACTIVE_FIBER;
 
-    printk(KERN_INFO "%s: Swtching from %ld to %ld\n", NAME, curr_fiber->index, next_fiber->index);
 	/*fpu__save(&curr_fiber->fpu_registers);
 	preempt_disable();
 	fpu__restore(&next_fiber->fpu_registers);
@@ -93,10 +92,8 @@ extern long fiber_alloc(int status, struct pt_regs regs){
         printk(KERN_ERR "%s: impossible to get a new index\n", NAME);
         return -1;
     }
-    printk(KERN_INFO "%s: init of new fiber\n", NAME);
     new_fiber = init_fiber(status, (current->parent->pid), (current->pid), fiber_index, regs);
 
     add_fiber(new_fiber);
-    printk(KERN_INFO "%s: returning a fiber index\n", NAME);
     return fiber_index;
 }

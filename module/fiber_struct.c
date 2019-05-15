@@ -97,7 +97,7 @@ inline long get_new_index(void){
     fresh_index = 0;
     elem = kmalloc(sizeof(struct process_node), __GFP_HIGH);
     if(elem == NULL){
-        printk(KERN_INFO "%s: error in kmalloc()\n", NAME);
+        printk(KERN_ERR "%s: error in kmalloc()\n", NAME);
         spin_unlock_irqrestore(&(pt.pt_lock), flags); // end of critical section
         return -1;
     }
@@ -136,7 +136,6 @@ extern struct fiber_struct* init_fiber(int status, int pid, int thread_running, 
     new_fiber->max_fls_index = 0;
     new_fiber->free_fls_indexes = new_fls_list;
     hash_init(new_fiber->fls_table); // INIT FLS HASH TABLE
-    printk(KERN_INFO "%s: initializing list_head \n",NAME);
     INIT_LIST_HEAD(&(new_fiber->free_fls_indexes->list));
     return new_fiber;
 }
@@ -277,8 +276,6 @@ extern int register_exit_handler(void){
     exit_prober.symbol_name  = "do_exit";
     exit_prober.pre_handler = (void*) exit_handler;
     exit_prober.post_handler = (void*) null_handler;
-    printk(KERN_INFO "process-probe: Registering process kprobe\n");
-
     ret = register_kprobe(&exit_prober);
     if(ret < 0){
         printk(KERN_ERR "process-probe: error in registering probe");
