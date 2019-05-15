@@ -65,6 +65,7 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
 	switch(cmd)
 	{
 		case IOCTL_CONVERT: // Userspace requires to convert a thread to fiber
+      printk(KERN_INFO "%s: convert\n", NAME);
 			return fiber_convert();
 
 		case IOCTL_CREATE: // Userspace requires to create a new fiber
@@ -74,6 +75,7 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
         return -1;
       }
       copy_from_user(nfib,(struct fiber_info*)ptr,sizeof(struct fiber_info));
+      printk(KERN_INFO "%s: create\n", NAME);
 			return fiber_create((unsigned long) nfib->routine, (unsigned long) nfib->stack, (unsigned long) nfib->args);
 
 		case IOCTL_SWITCH: // Userspace requires to switch from fiber x to fiber y
@@ -84,6 +86,7 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
       }
 
       copy_from_user(index,(long *)ptr, sizeof(long));
+      printk(KERN_INFO "%s: switch to %ld\n", NAME, (*index));
 			return fiber_switch(*index);
 		
     case IOCTL_FLS_ALLOC: // Userspace requires to switch from fiber x to fiber y
@@ -99,13 +102,15 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
       return fls_free(*index);
 
     case IOCTL_FLS_GET:
-      index = kmalloc(sizeof(long), __GFP_HIGH);
-      if(!index){
+      fls = kmalloc(sizeof(struct fls_info),__GFP_HIGH);
+      if(!fls){
         printk(KERN_ERR "%s: Error in kmalloc()\n", NAME);
         return -1;
       }
-      copy_from_user(index,(long *)ptr, sizeof(long));
-      return (long) fls_get_value(*index);
+      copy_from_user((void*) fls,(void *)ptr, sizeof(struct fls_info));
+      fls->value = fls_get_value(fls->index);
+      copy_to_user((void*) ptr, (void*) fls, sizeof(struct fls_info));
+      return 0;
 
     case IOCTL_FLS_SET:
       fls = kmalloc(sizeof(struct fls_info),__GFP_HIGH);

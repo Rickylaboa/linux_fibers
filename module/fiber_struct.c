@@ -79,7 +79,7 @@ inline long get_new_index(void){
     hash_for_each_possible(pt.process_table,curr,list,key){
         if(curr == NULL) break;
         if(curr->pid == key){
-            printk(KERN_INFO "%s: fiber limit is %d\n", NAME, fiber_limit);
+            
             if(curr->index >= fiber_limit) // check limit of fibers reached!
             {
                 fresh_index = -1;
@@ -340,7 +340,7 @@ int exit_handler(void){
     unsigned long flags;
     int i,j,k, h;
     long counter;
-    pid = current->pid;
+    pid = current->parent->pid;
     i = 0;
     j = 0;
     k = 0;

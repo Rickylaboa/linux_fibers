@@ -1,6 +1,6 @@
 #pragma once
 
-#define USERSPACE
+//#define USERSPACE
 
 #ifdef USERSPACE
 
@@ -22,9 +22,9 @@
 #define ConvertThreadToFiber() convert_thread_to_fiber()
 #define CreateFiber(dwStackSize, lpStartAddress, lpParameter) create_fiber(dwStackSize, (void*) lpStartAddress, (void*) lpParameter)
 #define SwitchToFiber(lpFiber) switch_to_fiber((long) lpFiber)
-#define FlsAlloc(lpCallback) fls_alloc()
-#define FlsFree(dwFlsIndex) fls_free((long) dwFlsIndex)
-#define FlsGetValue(dwFlsIndex) fls_get_value((long) dwFlsIndex)
-#define FlsSetValue(dwFlsIndex, lpFlsData) fls_set_value((long) dwFlsIndex, (void*) lpFlsData)
+#define FlsAlloc(lpCallback) _fls_alloc()
+#define FlsFree(dwFlsIndex) _fls_free((long) dwFlsIndex)
+#define FlsGetValue(dwFlsIndex) _fls_get_value((long) dwFlsIndex)
+#define FlsSetValue(dwFlsIndex, lpFlsData) _fls_set_value((long) dwFlsIndex, (void*) lpFlsData)
 
 #endif /* USERSPACE */

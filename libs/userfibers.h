@@ -71,7 +71,7 @@ long create_fiber(size_t stack_size,void (*routine)(void *), void *args){
   return ret;
 }
 
-long fls_alloc(){
+long _fls_alloc(){
   if(fd == -1 ){
     open_device();
   }
@@ -79,7 +79,7 @@ long fls_alloc(){
   return ret;
 }
 
-int fls_free(long index){
+int _fls_free(long index){
   if(fd == -1 ){
     open_device();
   }
@@ -87,16 +87,22 @@ int fls_free(long index){
   return ret;
 }
 
-void* fls_get_value(long index){
+void* _fls_get_value(long index){
   void* lret = 0;
+  long ret = 0;
   if(fd == -1 ){
     open_device();
   }
-  lret = (void*) (long) ioctl(fd, IOCTL_FLS_GET, &index);
-  return lret;
+
+  struct fls_info fls = {
+    .index = index,
+    .value = NULL 
+  };
+  ret = ioctl(fd, IOCTL_FLS_GET, &fls);
+  return fls.value;
 }
 
-int fls_set_value(long index,void* value){
+int _fls_set_value(long index,void* value){
   if(fd == -1 ){
     open_device();
   }

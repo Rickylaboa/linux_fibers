@@ -55,7 +55,7 @@ static void main_loop(void *args) {
 		fprintf(stderr, "No more FLS storage available, aborting...\n");
 		exit(EXIT_FAILURE);
 	}
-	
+
 	FlsSetValue(q_idx, malloc(sizeof(calqueue)));
 	calqueue_init((calqueue *)FlsGetValue(q_idx));
 	event = malloc(sizeof(msg_t));
@@ -184,12 +184,14 @@ int main(int argc, char **argv) {
 	for(i = 1; i < num_fibers; i++) {
 		fibers[i] = CreateFiber(STACK_SIZE, main_loop, (void *)(i+1));
 	}
+	
 	init_millis = timer_value_milli(fiber_initialization);
 	
 	signal(SIGALRM, schedule);
 	alarm(1);
 	
 	init_complete = true;
+	
 
 	main_loop((void *)1);
 	

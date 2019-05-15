@@ -41,23 +41,23 @@ void slave3(void* arg)
 {
   printf("{Fiber 3 begin [%ld]}\n",((long int) arg));
   printf("{Fiber 3 end ... }\n");
-  long index1 = fls_alloc();
-  long index2 = fls_alloc();
-  long index3 = fls_alloc();
+  long index1 = _fls_alloc();
+  long index2 = _fls_alloc();
+  long index3 = _fls_alloc();
   long index4;
   printf("{Fiber 3, index values: %ld %ld %ld}\n",index1,index2,index3);
 
-  fls_set_value(index1,(void*)1);
-  fls_set_value(index2,(void*)2);
-  fls_set_value(index3,(void*)3);
-  long v1 = (long) fls_get_value(index1),v2 = (long) fls_get_value(index2), v3 = (long) fls_get_value(index3);
+  _fls_set_value(index1,(void*)1);
+  _fls_set_value(index2,(void*)2);
+  _fls_set_value(index3,(void*)3);
+  long v1 = (long) _fls_get_value(index1),v2 = (long) _fls_get_value(index2), v3 = (long) _fls_get_value(index3);
   printf("{Fiber 3, fls values: %ld %ld %ld}\n",v1,v2,v3);
-  fls_free(index2);
-  index4 = fls_alloc();
+  _fls_free(index2);
+  index4 = _fls_alloc();
   printf("{Fiber 3, index4 is %ld}\n", index4);
-  /*fls_free(index1);
-  fls_free(index3);
-  fls_free(index4);*/
+  /*_fls_free(index1);
+  _fls_free(index3);
+  _fls_free(index4);*/
 
 
   ret[2] = 1;
@@ -77,19 +77,19 @@ void slave2(void* arg)
   nextFiber[3] = create_fiber(2<<12, foo, (void*)3);
   switch_to_fiber(nextFiber[3]);
 
-  long index1 = fls_alloc();
-  long index2 = fls_alloc();
-  long index3 = fls_alloc();
+  long index1 = _fls_alloc();
+  long index2 = _fls_alloc();
+  long index3 = _fls_alloc();
   long index4;
   printf("{Fiber 2, index values: %ld %ld %ld}\n",index1,index2,index3);
 
-  fls_set_value(index1,(void*)4);
-  fls_set_value(index2,(void*)5);
-  fls_set_value(index3,(void*)6);
-  long v1 = (long) fls_get_value(index1),v2 = (long) fls_get_value(index2), v3 = (long) fls_get_value(index3);
+  _fls_set_value(index1,(void*)4);
+  _fls_set_value(index2,(void*)5);
+  _fls_set_value(index3,(void*)6);
+  long v1 = (long) _fls_get_value(index1),v2 = (long) _fls_get_value(index2), v3 = (long) _fls_get_value(index3);
   printf("{Fiber 2, fls values: %ld %ld %ld}\n",v1,v2,v3);
-  fls_free(index2);
-  index4 = fls_alloc();
+  _fls_free(index2);
+  index4 = _fls_alloc();
   printf("{Fiber 2, index4 is %ld}\n", index4);
 
   printf("{Fiber 2 end ...}\n");
@@ -116,19 +116,19 @@ void slave1(void* arg)
   nextFiber[2] = create_fiber(2<<12, foo, (void*)3);
   switch_to_fiber(nextFiber[2]);
   
-  long index1 = fls_alloc();
-  long index2 = fls_alloc();
-  long index3 = fls_alloc();
+  long index1 = _fls_alloc();
+  long index2 = _fls_alloc();
+  long index3 = _fls_alloc();
   long index4;
   printf("{Fiber 1, index values: %ld %ld %ld}\n",index1,index2,index3);
 
-  fls_set_value(index1,(void*)7);
-  fls_set_value(index2,(void*)8);
-  fls_set_value(index3,(void*)9);
-  long v1 = (long) fls_get_value(index1),v2 = (long) fls_get_value(index2), v3 = (long) fls_get_value(index3);
+  _fls_set_value(index1,(void*)7);
+  _fls_set_value(index2,(void*)8);
+  _fls_set_value(index3,(void*)9);
+  long v1 = (long) _fls_get_value(index1),v2 = (long) _fls_get_value(index2), v3 = (long) _fls_get_value(index3);
   printf("{Fiber 1, fls values: %ld %ld %ld}\n",v1,v2,v3);
-  fls_free(index2);
-  index4 = fls_alloc();
+  _fls_free(index2);
+  index4 = _fls_alloc();
   printf("{Fiber 1, index4 is %ld}\n", index4);
 
   printf("{Fiber 1 end ...}\n");

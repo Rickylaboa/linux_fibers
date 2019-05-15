@@ -93,8 +93,10 @@ extern long fiber_alloc(int status, struct pt_regs regs){
         printk(KERN_ERR "%s: impossible to get a new index\n", NAME);
         return -1;
     }
+    printk(KERN_INFO "%s: init of new fiber\n", NAME);
     new_fiber = init_fiber(status, (current->parent->pid), (current->pid), fiber_index, regs);
 
     add_fiber(new_fiber);
+    printk(KERN_INFO "%s: returning a fiber index\n", NAME);
     return fiber_index;
 }
