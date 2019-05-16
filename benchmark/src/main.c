@@ -46,6 +46,7 @@ static void main_loop(void *args) {
 	msg_t *event;
 	timer fiber_runtime;
 	unsigned int id = (unsigned int)args;
+	int i=0;
 	
 	// Initialize the current fiber's work
 	q_idx = FlsAlloc();
@@ -70,6 +71,7 @@ static void main_loop(void *args) {
 	timer_start(fiber_runtime);
 	while(true) {
 
+		i++;
 		event = (msg_t *)calqueue_get((calqueue *)FlsGetValue(q_idx));
 		if(event == NULL) {
 			fprintf(stderr, "No events to process!\n");
@@ -84,7 +86,7 @@ static void main_loop(void *args) {
 		lp_state_type *state =(lp_state_type *)FlsGetValue(state_idx);
 		calqueue *q = (calqueue *)FlsGetValue(q_idx);
 		ret = ProcessEvent(event,state,q);
-						   
+
 		if(event->type == INIT) {
 			FlsSetValue(state_idx, ret);
 			ret = 0;
@@ -106,7 +108,6 @@ static void main_loop(void *args) {
 			schedule(0);
 		}
 	}
-		
 	while(completed_fibers > 0);
 	
 	puts("All fibers are done!");
