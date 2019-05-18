@@ -15,9 +15,15 @@
 #define IOCTL_FLS_SET _IOW(MAJOR, 6, void *)
 
 
+struct fiber_mem_node{
+  void* stack;
+  int stack_size;
+  struct fiber_mem_node* next; 
+};
+
 struct fiber_info {        //useful info to create a fiber
 
-  void **stack;
+  void *stack;
   void (*routine) (void *);
   void *args;
 };
