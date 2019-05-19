@@ -101,6 +101,8 @@ inline long get_new_index(void){
         spin_unlock_irqrestore(&(pt.pt_lock), flags); // end of critical section
         return -1;
     }
+    //debugging
+    add_allocation();
     elem->pid = key;
     elem->index = fresh_index;
     hash_add(pt.process_table, &(elem->list), key);
@@ -121,12 +123,16 @@ extern struct fiber_struct* init_fiber(int status, int pid, int thread_running, 
         printk(KERN_ERR "%s: error in kmalloc\n", NAME);
         return NULL;   
     }
+    //debugging
+    add_allocation();
 
     new_fls_list  =  kmalloc(sizeof(struct fls_list), __GFP_HIGH);
     if(new_fls_list == NULL){
         printk(KERN_ERR "%s: error in kmalloc\n", NAME);
         return NULL;   
     }
+    //debugging
+    add_allocation();
 
     new_fiber->status = status;
     new_fiber->pid = pid;
@@ -153,6 +159,8 @@ inline long add_fiber(struct fiber_struct *f){
         printk(KERN_INFO "%s: error in kmalloc()\n", NAME);
         return -1;
     }
+    //debugging
+    add_allocation();
     elem->data = *f;
     key = (long long) ((long long) f->pid << MAX_FIBERS) + f->index;
 	spin_lock_irqsave(&(ft.ft_lock), flags); // begin of critical section
@@ -173,6 +181,8 @@ inline int add_thread(int tid,long active_fiber_index){
         printk(KERN_ERR "%s: error in kmalloc()\n", NAME);
         return -1;
     }
+    //debugging
+    add_allocation();
     elem->pid = current->parent->pid;
     elem->tid =  tid;
     elem->active_fiber_index = active_fiber_index;
@@ -313,6 +323,8 @@ static int fls_free_with_struct(struct fiber_struct *f, long index){
             printk(KERN_ERR "%s: Error in kmalloc()\n", NAME);
             return -1;
         }
+        //debugging
+        add_allocation();
         first->index = index;
         list_add(&(first->list), &(f->free_fls_indexes->list));
     }
@@ -355,6 +367,8 @@ int exit_handler(void){
             printk(KERN_INFO "%s: %d exiting, deleting from hashtables..\n",NAME,pid);
             hash_del(&(curr1->list));
             kfree(curr1);
+            //debugging
+            remove_allocation();
             i++;
         }
     } 
@@ -372,6 +386,8 @@ int exit_handler(void){
                     h++;
                 }
                 kfree(curr2);
+                //debugging
+                remove_allocation();
             }
         }
     }
@@ -380,6 +396,8 @@ int exit_handler(void){
         if(curr3->pid == pid){
             hash_del(&(curr3->list));
             kfree(curr3);
+            //debugging
+            remove_allocation();
             k++;
         }
     }
@@ -391,6 +409,8 @@ int exit_handler(void){
     if(j > 0) printk(KERN_INFO "%s: %d fibers\n", NAME, j);
     if(k > 0) printk(KERN_INFO "%s: %d threads\n", NAME, k);
     if(h > 0) printk(KERN_INFO "%s: %d fls stuff\n", NAME, h);
+    print_allocations();
+    init_allocations();
 
     return 0;
 }

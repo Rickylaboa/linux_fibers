@@ -21,6 +21,7 @@
 #include<linux/hashtable.h>
 #include <linux/list.h>
 #include <linux/kprobes.h>
+#include "debug.h"
 #include "fls.h"
 
 
