@@ -71,20 +71,21 @@ extern long fiber_switch(long index){
         //printk(KERN_ERR "%s: %ld is running (from %ld)\n",NAME,next_fiber->index,curr_fiber->index);
         return -1;
     }
+    test_and_clear_bit(0, &(curr_fiber->status));
 
     memcpy(&curr_fiber->registers, regs, sizeof(struct pt_regs));
     memcpy(regs, &next_fiber->registers, sizeof(struct pt_regs));
 
     
     curr_fpu_regs = &(curr_fiber->fpu_registers);
-    fpu__save(curr_fpu_regs);  
+    //fpu__save(curr_fpu_regs);  
 
     preempt_disable();
     next_fpu_regs = &(next_fiber->fpu_registers);
     fpu__restore(next_fpu_regs);
     preempt_enable();
 
-    test_and_clear_bit(0, &(curr_fiber->status));
+    set_thread(current->pid,next_fiber->index);
 
     printk(KERN_INFO "%s: switching from %ld to %ld (Thread %d)\n",NAME,curr_fiber->index,next_fiber->index,current->pid);
 

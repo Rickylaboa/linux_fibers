@@ -70,7 +70,6 @@ static void main_loop(void *args) {
 	// Do the job!
 	timer_start(fiber_runtime);
 	while(true) {
-		printf(".");
 		i++;
 		event = (msg_t *)calqueue_get((calqueue *)FlsGetValue(q_idx));
 		if(event == NULL) {
