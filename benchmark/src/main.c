@@ -70,7 +70,7 @@ static void main_loop(void *args) {
 	// Do the job!
 	timer_start(fiber_runtime);
 	while(true) {
-
+		printf(".");
 		i++;
 		event = (msg_t *)calqueue_get((calqueue *)FlsGetValue(q_idx));
 		if(event == NULL) {
@@ -98,7 +98,7 @@ static void main_loop(void *args) {
 			break;
 	}
 	millis = timer_value_milli(fiber_runtime);
-
+	printf("|");
 	// Notify other fibers that I'm done and reduce the total time
 	__sync_fetch_and_add(&exec_millis, millis);
 	__sync_fetch_and_sub(&completed_fibers, 1);
