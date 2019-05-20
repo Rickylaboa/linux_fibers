@@ -46,7 +46,6 @@ extern long fiber_switch(long index){
     struct pt_regs *regs;
     struct fpu *curr_fpu_regs;
     struct fpu *next_fpu_regs;
-    struct fxregs_state *next_fx_regs;
     struct fiber_struct *curr_fiber;
     struct fiber_struct *next_fiber;
     
@@ -87,7 +86,7 @@ extern long fiber_switch(long index){
 
     set_thread(current->pid,next_fiber->index);
 
-    printk(KERN_INFO "%s: switching from %ld to %ld (Thread %d)\n",NAME,curr_fiber->index,next_fiber->index,current->pid);
+    //printk(KERN_INFO "%s: switching from %ld to %ld (Thread %d)\n",NAME,curr_fiber->index,next_fiber->index,current->pid);
 
     return 0;
 }
