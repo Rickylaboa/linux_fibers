@@ -6,11 +6,11 @@
     the max_fls_index is incremented, the data are allocated and the
     fls index is returned to userspace. */
 long fls_alloc(void){
-
     struct fiber_struct* f = get_fiber(current_fiber());
     struct fls_list *first;
     struct fls_data *data;
     long index; 
+    printk(KERN_INFO "%s: allocating fls index (fiber %ld)\n",NAME,f->index);
     first = list_first_entry_or_null(&(f->free_fls_indexes->list), struct fls_list, list);
     data = kmalloc(sizeof(struct fls_data), __GFP_HIGH);
     if(!data){
@@ -23,7 +23,7 @@ long fls_alloc(void){
     else{
         index = first->index;
         list_del(&(first->list));
-
+        kfree(first);
     }
     data->index = index; 
     data->value = 0; 
@@ -39,6 +39,7 @@ int fls_free(long index){
     struct fiber_struct* f = get_fiber(current_fiber());
     struct fls_list *first;
     struct fls_data *data;
+    printk(KERN_INFO "%s: freeing fls index (fiber %ld)\n",NAME,f->index);
 
     if(f->max_fls_index == index){
         (f->max_fls_index)--;

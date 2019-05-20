@@ -76,15 +76,11 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
         printk(KERN_ERR "%s: error in kmalloc()\n", NAME);
         return -1;
       }
-      //debugging
-      add_allocation();
 
       copy_from_user(nfib,(struct fiber_info*)ptr,sizeof(struct fiber_info));
 			ret = fiber_create((unsigned long) nfib->routine, (unsigned long) nfib->stack, (unsigned long) nfib->args);
       //printk(KERN_INFO "%s: create\n",NAME);
       kfree(nfib);
-      //debugging
-      remove_allocation();
       return ret;
 		
     case IOCTL_SWITCH: // Userspace requires to switch from fiber x to fiber y
@@ -93,14 +89,11 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
         printk(KERN_ERR "%s: Error in kmalloc()\n", NAME);
         return -1;
       }
-      //debugging
-      add_allocation();
+
       copy_from_user(index,(long *)ptr, sizeof(long));
 			ret = fiber_switch(*index);
       //printk(KERN_INFO "%s: switch to %ld\n",NAME,(*index));
       kfree(index);
-      //debugging
-      remove_allocation();
       return ret;
 		
     case IOCTL_FLS_ALLOC: // Userspace requires to switch from fiber x to fiber y
@@ -114,14 +107,10 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
         //printk(KERN_ERR "%s: Error in kmalloc()\n", NAME);
         return -1;
       }
-      //debugging
-      add_allocation();
       copy_from_user(index,(long *)ptr, sizeof(long));
       ret = fls_free(*index);
       //printk(KERN_INFO "%s: fls free\n",NAME);
       kfree(index);
-      //debugging
-      remove_allocation();
       return ret;
 
     case IOCTL_FLS_GET:
@@ -130,14 +119,10 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
         printk(KERN_ERR "%s: Error in kmalloc()\n", NAME);
         return -1;
       }
-      //debugging
-      add_allocation();
       copy_from_user((void*) fls,(void *)ptr, sizeof(struct fls_info));
       fls->value = fls_get_value(fls->index);
       copy_to_user((void*) ptr, (void*) fls, sizeof(struct fls_info));
       kfree(fls);
-      //debugging
-      remove_allocation();
       return 0;
 
     case IOCTL_FLS_SET:
@@ -146,15 +131,11 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
         printk(KERN_ERR "%s: Error in kmalloc()\n", NAME);
         return -1;
       }
-      //debugging
-      add_allocation();
       copy_from_user(fls,(long *)ptr, sizeof(struct fls_info));
       //printk(KERN_INFO "%s: fls set\n",NAME);
       fls_set_value(fls->index,(void*) fls->value);
   
       kfree(fls);
-      //debugging
-      remove_allocation();
       return 0;
 
 		default:
