@@ -42,6 +42,7 @@ extern long fiber_convert(void){
     context, both via memcpy. Before returning, it sets the new active fiber for the 
     current thread. */
 extern long fiber_switch(long index){
+    bool next_status;
     struct pt_regs *regs;
     struct fpu *curr_fpu_regs;
     struct fpu *next_fpu_regs;
@@ -65,20 +66,27 @@ extern long fiber_switch(long index){
         printk(KERN_ERR "%s: critical error, next fiber NULL\n", NAME);
         return -1;    
     }
-    if(next_fiber->status == ACTIVE_FIBER) return -1;
+    next_status = test_and_set_bit(0, &(next_fiber->status));
+    if(next_status == ACTIVE_FIBER){
+        //printk(KERN_ERR "%s: %ld is running (from %ld)\n",NAME,next_fiber->index,curr_fiber->index);
+        return -1;
+    }
 
     memcpy(&curr_fiber->registers, regs, sizeof(struct pt_regs));
-    curr_fiber->status = INACTIVE_FIBER;
     memcpy(regs, &next_fiber->registers, sizeof(struct pt_regs));
-    next_fiber->status = ACTIVE_FIBER;
 
     
     curr_fpu_regs = &(curr_fiber->fpu_registers);
-    copy_fxregs_to_kernel(curr_fpu_regs);  
+    fpu__save(curr_fpu_regs);  
 
+    preempt_disable();
     next_fpu_regs = &(next_fiber->fpu_registers);
-    next_fx_regs = &(next_fpu_regs->state.fxsave);
-    copy_kernel_to_fxregs(next_fx_regs); 
+    fpu__restore(next_fpu_regs);
+    preempt_enable();
+
+    test_and_clear_bit(0, &(curr_fiber->status));
+
+    printk(KERN_INFO "%s: switching from %ld to %ld (Thread %d)\n",NAME,curr_fiber->index,next_fiber->index,current->pid);
 
     return 0;
 }

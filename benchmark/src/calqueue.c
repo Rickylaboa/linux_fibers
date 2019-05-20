@@ -247,9 +247,11 @@ void calqueue_put(calqueue *q, double priority, void *payload) {
 	new_node->next = NULL;
 
 
+	//printf("Priority and cwidth: %f | %f\n",priority,q->cwidth);
 	// Calculate the number of the bucket in which to place the new entry
 	i = (int)(priority / (double)q->cwidth); // Virtual bucket
 	i = i % q->nbuckets; // Actual bucket
+	//printf("Priority | cwidth | Bucket : %f | %f | %d\n",priority,q->cwidth,i);
 
 	// Grab the head of events list in bucket i
 	traverse = q->calendar[i];

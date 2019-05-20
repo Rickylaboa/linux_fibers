@@ -33,9 +33,9 @@
 
 
 struct fiber_struct{
-    int status;
     int pid;
     int thread_running;
+    unsigned long status;
     long index;
     long max_fls_index;
     struct fls_list* free_fls_indexes;
