@@ -84,9 +84,8 @@ extern long fiber_switch(long index){
     fpu__restore(next_fpu_regs);
     preempt_enable();
 
-    set_thread(current->pid,next_fiber->index);
 
-    //printk(KERN_INFO "%s: switching from %ld to %ld (Thread %d)\n",NAME,curr_fiber->index,next_fiber->index,current->pid);
+    set_thread(current->pid,next_fiber->index);
 
     return 0;
 }
@@ -105,5 +104,6 @@ extern long fiber_alloc(int status, struct pt_regs regs){
     }
     new_fiber = init_fiber(status, (current->parent->pid), (current->pid), fiber_index, regs);
     add_fiber(new_fiber);
+    kfree(new_fiber);
     return fiber_index;
 }

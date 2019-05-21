@@ -21,14 +21,13 @@
 #include<linux/hashtable.h>
 #include <linux/list.h>
 #include <linux/kprobes.h>
-#include <linux/rcupdate.h>
 #include "debug.h"
 #include "fls.h"
 
 
-#define FIBER_BKT 12
-#define PROCESS_BKT 12
-#define THREAD_BKT 12
+#define FIBER_BKT 8
+#define PROCESS_BKT 15
+#define THREAD_BKT 15
 #define MAX_FIBERS 10
 #define NAME "fibers"
 

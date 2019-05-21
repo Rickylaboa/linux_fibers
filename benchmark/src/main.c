@@ -100,7 +100,7 @@ static void main_loop(void *args) {
 	// Notify other fibers that I'm done and reduce the total time
 	__sync_fetch_and_add(&exec_millis, millis);
 	__sync_fetch_and_sub(&completed_fibers, 1);
-	printf(".");
+	printf("|");
 	if(id != 1) {
 		while(true) {
 			schedule(0);
@@ -108,9 +108,8 @@ static void main_loop(void *args) {
 	}
 	while(completed_fibers > 0);
 	
-	puts("\nAll fibers are done!");
-	printf("Time to initialize fibers: %f\n", (double)init_millis / 1000);
-	printf("Time to run do the work (per-fiber): %f\n", (double)exec_millis / 1000 / num_fibers);
+	puts(" COMPLETED ");
+	printf("Init: %f ; Work: %f\n", ((double)init_millis / 1000), ((double)exec_millis / 1000 / num_fibers));
 	exit(EXIT_SUCCESS);
 	
 }

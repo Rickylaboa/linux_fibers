@@ -157,6 +157,5 @@ __attribute__((destructor)) void end (void)
     free(f);
     i++;
   }
-  printf("Free on %d fibers' stacks\n",i);
 }
 

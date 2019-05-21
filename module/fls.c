@@ -16,6 +16,7 @@ long fls_alloc(void){
     spin_lock_irqsave(&(fls_lock), fl); // begin of allfibers cs
     
     first = list_first_entry_or_null(&(f->free_fls_indexes->list), struct fls_list, list);
+    printk(KERN_INFO "%s: Allocating new index (fib %ld)\n", NAME, f->index); 
     data = kmalloc(sizeof(struct fls_data), __GFP_HIGH);
     if(!data){
         printk(KERN_ERR "%s: Error in kmalloc()\n", NAME);
@@ -73,10 +74,8 @@ int fls_free(long index){
     return 0;
 }
 
-/*  This function r    printk(KERN_INFO "%s: I'm fiber %ld\n",NAME,f->index);
-trieves a data by index, searching it
-    in the correspo    printk(KERN_INFO "%s: I'm fiber %ld\n",NAME,f->index);
-ding hash table. */
+/*  This function retrieves a data by index, searching it
+    in the corresponding hash table. */
 void *fls_get_value(long index){
 
     struct fiber_struct* f = get_fiber(current_fiber());

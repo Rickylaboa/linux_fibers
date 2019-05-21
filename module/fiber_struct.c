@@ -21,19 +21,19 @@ extern void init_hashtables(void){
 inline int is_a_fiber(void)
 {
     int key;
-    int ret;
     struct thread_node* curr;
+    unsigned long flags;
     key = current->pid;
-    ret = 0;
-    rcu_read_lock();
-    hash_for_each_possible_rcu(tt.thread_table, curr, list,key){
+    spin_lock_irqsave(&(tt.tt_lock), flags); // begin of critical section
+    hash_for_each_possible(tt.thread_table, curr, list,key){
         if(curr == NULL) break;
         if(curr->tid == key){
-            ret = 1;
+            spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of critical section
+            return 1;
         }
     }
-    rcu_read_unlock();
-    return ret;
+    spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of critical section
+    return 0;
 }
 
 /*  This function returns the fiber id to the current fiber, if
@@ -41,19 +41,21 @@ inline int is_a_fiber(void)
 inline long current_fiber(void)
 {
     int key;
+    struct hlist_node* n;
     struct thread_node* curr;
-    long active_fiber_index;
+    unsigned long flags;
     key = current->pid;
-    active_fiber_index = -1;
-    rcu_read_lock();
-    hash_for_each_possible_rcu(tt.thread_table,curr,list,key){
+    spin_lock_irqsave(&(tt.tt_lock), flags); // begin of critical section
+    hash_for_each_possible_safe(tt.thread_table,curr,n,list,key){
         if(curr->tid == key){
-            active_fiber_index = curr->active_fiber_index;
-            break;
+            long active_fiber_index = curr->active_fiber_index;
+            spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of critical section
+            return active_fiber_index;
         }
     }
-    rcu_read_unlock();
-    return active_fiber_index;
+    spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of critical section
+    printk(KERN_ERR "%s: thread %d not found!\n", NAME, key);
+    return -1;
 }
 
 /*  This function provides a way to retrieve a fresh index
@@ -151,7 +153,7 @@ inline long add_fiber(struct fiber_struct *f){
         printk(KERN_INFO "%s: error in kmalloc()\n", NAME);
         return -1;
     }
-    elem->data = *f;
+    memcpy(&(elem->data),f,sizeof(struct fiber_struct));
     key = (long long) ((long long) f->pid << MAX_FIBERS) + f->index;
 	spin_lock_irqsave(&(ft.ft_lock), flags); // begin of critical section
     hash_add_rcu(ft.fiber_table, &(elem->list), key);
@@ -176,7 +178,7 @@ inline int add_thread(int tid,long active_fiber_index){
     elem->active_fiber_index = active_fiber_index;
     key = tid;
 	spin_lock_irqsave(&(tt.tt_lock), flags); // begin of critical section
-    hash_add_rcu(tt.thread_table, &(elem->list), key);
+    hash_add(tt.thread_table, &(elem->list), key);
     spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of critical section
 
     return 0;
@@ -189,23 +191,17 @@ inline int set_thread(int tid,long active_fiber_index){
 
     int key;
     struct thread_node* curr;
-    struct thread_node* selected;
+    struct hlist_node* n;
     unsigned long flags;
     key = current->pid;
-    selected = NULL;
-    rcu_read_lock();
-    hash_for_each_possible_rcu(tt.thread_table,curr, list, key){
+    spin_lock_irqsave(&(tt.tt_lock), flags); // begin of critical section
+    hash_for_each_possible_safe(tt.thread_table, curr, n, list, key){
         if(curr->tid == key){
-            selected = curr;
-            break;
+            curr->active_fiber_index = active_fiber_index;
+            spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of critical section
+            return 1;
         }
     }
-    rcu_read_unlock();
-    if(!selected) return 0;
-    spin_lock_irqsave(&(tt.tt_lock), flags); // begin of critical section
-    hash_del_rcu(&selected->list);
-    selected->active_fiber_index = active_fiber_index;
-    hash_add_rcu(tt.thread_table,&(selected->list),key);
     spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of critical section
     return 0;
 }
@@ -221,19 +217,18 @@ extern void remove_fiber(long index){ // TO MODIFY
 inline struct fiber_struct* get_fiber(long index){
 
     long long key;
+    unsigned long flags;
     struct fiber_node* curr;
-    struct fiber_struct* f;
-    f = NULL; 
     key = (long long) ((long long) current->parent->pid << MAX_FIBERS) + index; 
-    rcu_read_lock();
-    hash_for_each_possible_rcu(ft.fiber_table, curr, list, key){
+	spin_lock_irqsave(&(ft.ft_lock), flags); // begin of critical section
+    hash_for_each_possible(ft.fiber_table, curr, list, key){
         if(curr->data.index==index && curr->data.pid == current->parent->pid){
-            f = &curr->data;
-            break;
+            spin_unlock_irqrestore(&(ft.ft_lock), flags); // end of critical section
+            return &curr->data;
         }
     }
-    rcu_read_unlock(); // end of critical section
-    return f;
+    spin_unlock_irqrestore(&(ft.ft_lock), flags); // end of critical section
+    return NULL;
 }
 
 /*  This function frees all the tables used. No clear if it is useful. 
@@ -309,6 +304,7 @@ static int fls_free_with_struct(struct fiber_struct *f){
     struct fls_list *first;
     struct fls_data *data;
     int bkt;
+    printk(KERN_INFO "%s: I'm fiber %ld\n",NAME,f->index);
     hash_for_each(f->fls_table, bkt, data, list){
     first = list_first_entry_or_null(&(f->free_fls_indexes->list), struct fls_list, list);
         while(first != NULL)
@@ -342,6 +338,8 @@ int exit_handler(void){
     h = 0;
 
     spin_lock_irqsave(&(pt.pt_lock), flags); // begin of allfibers cs
+    spin_lock_irqsave(&(ft.ft_lock), flags); // begin of process cs
+    spin_lock_irqsave(&(tt.tt_lock), flags); // begin of 
     hash_for_each_possible(pt.process_table, curr1, list, pid){
         if(curr1->pid == pid)
         {
@@ -351,35 +349,31 @@ int exit_handler(void){
             i++;
         }
     } 
-    spin_unlock_irqrestore(&(pt.pt_lock),flags);
-
-
     while(d > 0)
     { 
         d = 0;
-        spin_lock_irqsave(&(ft.ft_lock), flags); // begin of process cs
         hash_for_each(ft.fiber_table, bkt2, curr2, list){
             if(curr2->data.pid == pid){
-                hash_del_rcu(&(curr2->list));
+                hash_del(&(curr2->list));
                 j++;
                 d++;
                 fls_free_with_struct(&(curr2->data));
                 kfree(curr2);
             }
         }
-        spin_unlock_irqrestore(&(ft.ft_lock),flags);
     }
 
-    spin_lock_irqsave(&(tt.tt_lock), flags); // begin of 
     hash_for_each(tt.thread_table, bkt3, curr3, list){
         if(curr3->pid == pid){
-            hash_del_rcu(&(curr3->list));
+            hash_del(&(curr3->list));
             kfree(curr3);
             k++;
         }
     }
-    spin_unlock_irqrestore(&(tt.tt_lock),flags);
 
+    spin_unlock_irqrestore(&(tt.tt_lock),flags);
+    spin_unlock_irqrestore(&(ft.ft_lock),flags);
+    spin_unlock_irqrestore(&(pt.pt_lock),flags);
     if(i > 0) printk(KERN_INFO "%s: %d processes\n", NAME, i);
     if(j > 0) printk(KERN_INFO "%s: %d fibers\n", NAME, j);
     if(k > 0) printk(KERN_INFO "%s: %d threads\n", NAME, k);
