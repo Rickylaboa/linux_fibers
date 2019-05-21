@@ -304,7 +304,6 @@ static int fls_free_with_struct(struct fiber_struct *f){
     struct fls_list *first;
     struct fls_data *data;
     int bkt;
-    printk(KERN_INFO "%s: I'm fiber %ld\n",NAME,f->index);
     hash_for_each(f->fls_table, bkt, data, list){
     first = list_first_entry_or_null(&(f->free_fls_indexes->list), struct fls_list, list);
         while(first != NULL)
@@ -374,10 +373,10 @@ int exit_handler(void){
     spin_unlock_irqrestore(&(tt.tt_lock),flags);
     spin_unlock_irqrestore(&(ft.ft_lock),flags);
     spin_unlock_irqrestore(&(pt.pt_lock),flags);
-    if(i > 0) printk(KERN_INFO "%s: %d processes\n", NAME, i);
+    /*if(i > 0) printk(KERN_INFO "%s: %d processes\n", NAME, i);
     if(j > 0) printk(KERN_INFO "%s: %d fibers\n", NAME, j);
     if(k > 0) printk(KERN_INFO "%s: %d threads\n", NAME, k);
-    if(h > 0) printk(KERN_INFO "%s: %d fls stuff\n", NAME, h);
+    if(h > 0) printk(KERN_INFO "%s: %d fls stuff\n", NAME, h);*/
 
     return 0;
 }

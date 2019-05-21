@@ -16,7 +16,7 @@ long fls_alloc(void){
     spin_lock_irqsave(&(fls_lock), fl); // begin of allfibers cs
     
     first = list_first_entry_or_null(&(f->free_fls_indexes->list), struct fls_list, list);
-    printk(KERN_INFO "%s: Allocating new index (fib %ld)\n", NAME, f->index); 
+    //printk(KERN_INFO "%s: Allocating new index (fib %ld)\n", NAME, f->index); 
     data = kmalloc(sizeof(struct fls_data), __GFP_HIGH);
     if(!data){
         printk(KERN_ERR "%s: Error in kmalloc()\n", NAME);

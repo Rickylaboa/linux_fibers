@@ -25,6 +25,11 @@ testpell5:
     	./benchmark/test 5  ; \
 	done
 
+testpell50:	
+	while true; do \
+    	./benchmark/test 50  ; \
+	done
+
 testpell100:	
 	while true; do \
     	./benchmark/test 100  ; \
