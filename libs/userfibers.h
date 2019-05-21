@@ -149,6 +149,7 @@ __attribute__((constructor)) void start (void)
 __attribute__((destructor)) void end (void)
 {
   int i = 0;
+  close(fd);
   while(list!=NULL)
   {
     struct fiber_mem_node* f;
