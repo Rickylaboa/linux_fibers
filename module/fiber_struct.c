@@ -342,7 +342,6 @@ int exit_handler(void){
     hash_for_each_possible(pt.process_table, curr1, list, pid){
         if(curr1->pid == pid)
         {
-            printk(KERN_INFO "%s: %d exiting, deleting from hashtables..\n",NAME,pid);
             hash_del(&(curr1->list));
             kfree(curr1);
             i++;
