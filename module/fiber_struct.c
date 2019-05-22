@@ -135,7 +135,12 @@ extern struct fiber_struct* init_fiber(int status, int pid, int thread_running, 
     new_fiber->registers = regs;
     new_fiber->max_fls_index = 0;
     new_fiber->free_fls_indexes = new_fls_list;
+    
+    /*FPU REGISTER SAVING*/
     fpu__save(&(new_fiber->fpu_registers));
+  
+    
+    //copy_fxregs_to_kernel(&new_fiber->fpu_registers);
 
     hash_init(new_fiber->fls_table); // INIT FLS HASH TABLE
     INIT_LIST_HEAD(&(new_fiber->free_fls_indexes->list));
@@ -153,7 +158,7 @@ inline long add_fiber(struct fiber_struct *f){
         printk(KERN_INFO "%s: error in kmalloc()\n", NAME);
         return -1;
     }
-    memcpy(&(elem->data),f,sizeof(struct fiber_struct));
+    elem->data = *f;
     key = (long long) ((long long) f->pid << MAX_FIBERS) + f->index;
 	spin_lock_irqsave(&(ft.ft_lock), flags); // begin of critical section
     hash_add_rcu(ft.fiber_table, &(elem->list), key);

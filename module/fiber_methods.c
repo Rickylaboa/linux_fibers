@@ -12,7 +12,6 @@ extern long fiber_create(unsigned long ip, unsigned long sp, unsigned long di){
     regs.ip = ip;
     regs.sp = sp;
     regs.di = di;
-    regs.cx = di;
 
     return fiber_alloc(INACTIVE_FIBER, regs);
 }
@@ -44,16 +43,16 @@ extern long fiber_convert(void){
 extern long fiber_switch(long index){
     bool next_status;
     struct pt_regs *regs;
-    struct fpu *curr_fpu_regs;
-    struct fpu *next_fpu_regs;
     struct fiber_struct *curr_fiber;
     struct fiber_struct *next_fiber;
-    
+    struct fpu *curr_fpu_regs;
+    struct fpu *next_fpu_regs;
     long current_index;
     if(!is_a_fiber()) return -1; // If not a fiber, it must before issue a convert!
     current_index = current_fiber();
     regs = task_pt_regs(current);
 
+    if(current_index == index) return -1; 
     curr_fiber = get_fiber(current_index);
     next_fiber = get_fiber(index);
     if(curr_fiber == NULL){
@@ -72,21 +71,22 @@ extern long fiber_switch(long index){
     }
     test_and_clear_bit(0, &(curr_fiber->status));
 
-    memcpy(&curr_fiber->registers, regs, sizeof(struct pt_regs));
-    memcpy(regs, &next_fiber->registers, sizeof(struct pt_regs));
+    curr_fiber->registers = *regs;
+    *regs = next_fiber->registers;
 
-    
     curr_fpu_regs = &(curr_fiber->fpu_registers);
-    //fpu__save(curr_fpu_regs);  
+    fpu__save(curr_fpu_regs);  
 
     preempt_disable();
     next_fpu_regs = &(next_fiber->fpu_registers);
     fpu__restore(next_fpu_regs);
     preempt_enable();
+    
+        
+    //copy_fxregs_to_kernel(&curr_fiber->fpu_registers);
+    //copy_kernel_to_fxregs(&next_fiber->fpu_registers.state.fxsave);
 
-
-    set_thread(current->pid,next_fiber->index);
-
+    set_thread(current->pid,index);
     return 0;
 }
 
@@ -104,6 +104,5 @@ extern long fiber_alloc(int status, struct pt_regs regs){
     }
     new_fiber = init_fiber(status, (current->parent->pid), (current->pid), fiber_index, regs);
     add_fiber(new_fiber);
-    kfree(new_fiber);
     return fiber_index;
 }
