@@ -75,10 +75,10 @@ extern long fiber_switch(long index){
     *regs = next_fiber->registers;
 
     curr_fpu_regs = &(curr_fiber->fpu_registers);
-    fpu__save(curr_fpu_regs);  
-
-    preempt_disable();
     next_fpu_regs = &(next_fiber->fpu_registers);
+
+    fpu__save(curr_fpu_regs);  
+    preempt_disable();
     fpu__restore(next_fpu_regs);
     preempt_enable();
     
@@ -103,6 +103,7 @@ extern long fiber_alloc(int status, struct pt_regs regs){
         return -1;
     }
     new_fiber = init_fiber(status, (current->parent->pid), (current->pid), fiber_index, regs);
+    if(status == INACTIVE_FIBER) fpu__initialize(&(new_fiber->fpu_registers));
     add_fiber(new_fiber);
     return fiber_index;
 }

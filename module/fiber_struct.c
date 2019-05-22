@@ -116,7 +116,7 @@ extern struct fiber_struct* init_fiber(int status, int pid, int thread_running, 
 
     struct fiber_struct* new_fiber;
     struct fls_list* new_fls_list;
-    new_fiber =  kmalloc(sizeof(struct fiber_struct), __GFP_HIGH);
+    new_fiber =  kzalloc(sizeof(struct fiber_struct), __GFP_HIGH);
     if(new_fiber == NULL){
         printk(KERN_ERR "%s: error in kmalloc\n", NAME);
         return NULL;   
@@ -136,12 +136,6 @@ extern struct fiber_struct* init_fiber(int status, int pid, int thread_running, 
     new_fiber->max_fls_index = 0;
     new_fiber->free_fls_indexes = new_fls_list;
     
-    /*FPU REGISTER SAVING*/
-    fpu__save(&(new_fiber->fpu_registers));
-  
-    
-    //copy_fxregs_to_kernel(&new_fiber->fpu_registers);
-
     hash_init(new_fiber->fls_table); // INIT FLS HASH TABLE
     INIT_LIST_HEAD(&(new_fiber->free_fls_indexes->list));
     return new_fiber;
