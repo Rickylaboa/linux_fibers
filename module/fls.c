@@ -17,9 +17,9 @@ long fls_alloc(void){
     
     first = list_first_entry_or_null(&(f->free_fls_indexes->list), struct fls_list, list);
     //printk(KERN_INFO "%s: Allocating new index (fib %ld)\n", NAME, f->index); 
-    data = kmalloc(sizeof(struct fls_data), __GFP_HIGH);
+    data = kzalloc(sizeof(struct fls_data), __GFP_HIGH);
     if(!data){
-        printk(KERN_ERR "%s: Error in kmalloc()\n", NAME);
+        printk(KERN_ERR "%s: Error in kzalloc()\n", NAME);
         spin_unlock_irqrestore(&(fls_lock),fl);//end of cs
         return -1;
     }
@@ -54,9 +54,9 @@ int fls_free(long index){
         (f->max_fls_index)--;
     }
     else {
-        first = kmalloc(sizeof(struct fls_list), __GFP_HIGH);
+        first = kzalloc(sizeof(struct fls_list), __GFP_HIGH);
         if(!first){
-            printk(KERN_ERR "%s: Error in kmalloc()\n", NAME);
+            printk(KERN_ERR "%s: Error in kzalloc()\n", NAME);
             spin_unlock_irqrestore(&(fls_lock),fl);//end of cs
             return -1;
         }

@@ -95,9 +95,9 @@ inline long get_new_index(void){
     }
     // It means this is the first fiber of the process
     fresh_index = 0;
-    elem = kmalloc(sizeof(struct process_node), __GFP_HIGH);
+    elem = kzalloc(sizeof(struct process_node), __GFP_HIGH);
     if(elem == NULL){
-        printk(KERN_ERR "%s: error in kmalloc()\n", NAME);
+        printk(KERN_ERR "%s: error in kzalloc()\n", NAME);
         spin_unlock_irqrestore(&(pt.pt_lock), flags); // end of critical section
         return -1;
     }
@@ -110,7 +110,7 @@ inline long get_new_index(void){
 
 /*  This function is used to initialized a new fiber. It takes the status,
     the pid of the process, the pid of the thread, the index of the fiber
-    to initialize and the pt_regs. It uses kmalloc to allocate memory and 
+    to initialize and the pt_regs. It uses kzalloc to allocate memory and 
     fullfills it with the fields of a fiber. */
 extern struct fiber_struct* init_fiber(int status, int pid, int thread_running, long index, struct pt_regs regs){
 
@@ -118,13 +118,13 @@ extern struct fiber_struct* init_fiber(int status, int pid, int thread_running, 
     struct fls_list* new_fls_list;
     new_fiber =  kzalloc(sizeof(struct fiber_struct), __GFP_HIGH);
     if(new_fiber == NULL){
-        printk(KERN_ERR "%s: error in kmalloc\n", NAME);
+        printk(KERN_ERR "%s: error in kzalloc\n", NAME);
         return NULL;   
     }
 
-    new_fls_list  =  kmalloc(sizeof(struct fls_list), __GFP_HIGH);
+    new_fls_list  =  kzalloc(sizeof(struct fls_list), __GFP_HIGH);
     if(new_fls_list == NULL){
-        printk(KERN_ERR "%s: error in kmalloc\n", NAME);
+        printk(KERN_ERR "%s: error in kzalloc\n", NAME);
         return NULL;   
     }
 
@@ -147,9 +147,9 @@ inline long add_fiber(struct fiber_struct *f){
 
     long long key;
     unsigned long flags;
-    struct fiber_node* elem = kmalloc(sizeof(struct fiber_node), __GFP_HIGH);
+    struct fiber_node* elem = kzalloc(sizeof(struct fiber_node), __GFP_HIGH);
     if(elem == NULL){
-        printk(KERN_INFO "%s: error in kmalloc()\n", NAME);
+        printk(KERN_INFO "%s: error in kzalloc()\n", NAME);
         return -1;
     }
     elem->data = *f;
@@ -167,9 +167,9 @@ inline int add_thread(int tid,long active_fiber_index){
     
     int key;
     unsigned long flags;
-    struct thread_node* elem = kmalloc(sizeof(struct fiber_node), __GFP_HIGH);
+    struct thread_node* elem = kzalloc(sizeof(struct fiber_node), __GFP_HIGH);
     if(elem == NULL){
-        printk(KERN_ERR "%s: error in kmalloc()\n", NAME);
+        printk(KERN_ERR "%s: error in kzalloc()\n", NAME);
         return -1;
     }
     elem->pid = current->parent->pid;
