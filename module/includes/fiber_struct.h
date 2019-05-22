@@ -23,6 +23,7 @@
 #include <linux/kprobes.h>
 #include "debug.h"
 #include "fls.h"
+#include<linux/proc_fs.h>
 
 
 #define FIBER_BKT 8

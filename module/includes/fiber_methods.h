@@ -2,6 +2,7 @@
 #define FIBER_METHODS_H
 #include "fiber_struct.h"
 #include "constant.h"
+#include<linux/proc_fs.h>
 
 extern long fiber_create(unsigned long ip, unsigned long sp, unsigned long di);
 extern long fiber_convert(void);

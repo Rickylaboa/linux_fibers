@@ -137,7 +137,7 @@ int main(int argc, char **argv) {
 	unsigned int cpus;
 	unsigned int i;
 	timer fiber_initialization;
-	
+	printf("pid is %d\n", getpid());
 	// Initialize pseudorandom generator
 	srandom(time(0));
 	
