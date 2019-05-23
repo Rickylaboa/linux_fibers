@@ -37,9 +37,14 @@ struct pid_entry
 	.op   = OP,					             \
 }
 
+#define LNK(NAME, get_link)					\
+	NOD(NAME, (S_IFLNK|S_IRWXUGO),				\
+		&proc_pid_link_inode_operations, NULL,		\
+		{ .proc_get_link = get_link } )
+
 #define DIR(NAME, MODE, iops, fops)	\
 	NOD(NAME, (S_IFDIR|(MODE)), &iops, &fops, {} )
-
+		
 void proc_init(void);
 void proc_end(void);
 int proc_init_process(int pid);

@@ -22,12 +22,12 @@
   */
 
 static unsigned long cr0;
+static int (*proc_link)(struct dentry *, struct path *);
 static int (*_proc_tgid_base_readdir)(struct file*,struct dir_context*);
 static int (*proc_tgid_base_readdir)(struct file*,struct dir_context*);
 static struct dentry* (*proc_tgid_base_lookup)(struct inode*,struct dentry*, unsigned int);
 static int (*proc_pident_readdir)(struct file*, struct dir_context*, const struct pid_entry*, unsigned int);
 static struct dentry* (*proc_pident_lookup)(struct inode*, struct dentry*, const struct pid_entry*, unsigned int);
-//static const struct pid_entry* tgid_base_stuff;
 
 
 static struct file_operations* proc_tgid_base_operations;
@@ -36,6 +36,10 @@ static struct inode_operations proc_pid_link_inode_operations;
 
 static const struct file_operations proc_fibers_operations;
 static const struct inode_operations proc_fibers_inode_operations;
+
+static int link(struct dentry* d, struct path* p){
+  return proc_link(d,p);
+}
 
 static const struct pid_entry fiber_base_stuff[] = {
   DIR("fibers", S_IALLUGO, proc_fibers_inode_operations, proc_fibers_operations)
@@ -66,7 +70,7 @@ static struct dentry *f_proc_lookup(struct inode *dir, struct dentry *dentry, un
 {
   struct dentry* res;
   res = proc_tgid_base_lookup(dir,dentry,flags);
-  if(!res){
+  if(IS_ERR(res) && PTR_ERR(res) == -ENOENT){ // bob
     res = proc_pident_lookup(dir, dentry,fiber_base_stuff,fiber_base_stuff + ARRAY_SIZE(fiber_base_stuff));
   }
   return res;
@@ -78,6 +82,7 @@ void proc_init(){
   cr0 = read_cr0();
   _proc_tgid_base_readdir = (void *) kallsyms_lookup_name("proc_tgid_base_readdir");
   proc_tgid_base_readdir = (void *) kallsyms_lookup_name("proc_tgid_base_readdir");
+  proc_link = (void*) kallsyms_lookup_name("proc_root_link");
   proc_tgid_base_lookup = (void*) kallsyms_lookup_name("proc_tgid_base_lookup");
   proc_pident_readdir = (void*) kallsyms_lookup_name("proc_pident_readdir");
   proc_pident_lookup = (void*) kallsyms_lookup_name("proc_pident_lookup");
@@ -94,7 +99,7 @@ void proc_init(){
 
 void proc_end(){
   unprotect();
-  //proc_tgid_base_inode_operations->lookup = proc_tgid_base_lookup;
+  proc_tgid_base_inode_operations->lookup = proc_tgid_base_lookup;
   proc_tgid_base_operations->iterate_shared = proc_tgid_base_readdir;
   protect();
 }
