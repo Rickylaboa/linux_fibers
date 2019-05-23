@@ -24,7 +24,7 @@ extern long fiber_convert(void){
     int ret = 0;
     long fiber_index;
     struct pt_regs regs = *task_pt_regs(current);
-
+    printk(KERN_INFO "%s: pid is %d\n",NAME,current->parent->pid);
 
     fiber_index = fiber_alloc(ACTIVE_FIBER, regs);
     ret = add_thread(current->pid, fiber_index);
@@ -104,6 +104,7 @@ extern long fiber_alloc(int status, struct pt_regs regs){
     }
     new_fiber = init_fiber(status, (current->parent->pid), (current->pid), fiber_index, regs);
     if(status == INACTIVE_FIBER) fpu__initialize(&(new_fiber->fpu_registers));
+    proc_fiber_add(get_fiber_folder(),fiber_index);
     add_fiber(new_fiber);
     return fiber_index;
 }

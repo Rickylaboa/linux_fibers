@@ -59,6 +59,7 @@ struct fiber_node{
 struct process_node{
     int pid;
     long index;
+    struct proc_dir_entry* proc_folder;
     struct hlist_node list;
 };
 
@@ -87,6 +88,7 @@ struct thread_hash{
 extern struct fiber_struct* init_fiber(int status,int pid, int thread_running,long index,struct pt_regs regs);
 inline struct fiber_struct* get_fiber(long index);
 inline long get_new_index(void);
+inline struct proc_dir_entry* get_fiber_folder(void);
 inline long current_fiber(void);
 inline long add_fiber(struct fiber_struct* f);
 inline int add_thread(int tid,long active_fiber_index);

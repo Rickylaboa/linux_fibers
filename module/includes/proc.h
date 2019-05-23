@@ -9,6 +9,8 @@
 
 #define PROCFS_MAX_SIZE		1024
 
+
+
 union proc_op {
 	int (*proc_get_link)(struct dentry *, struct path *);
 	int (*proc_show)(struct seq_file *m,
@@ -16,6 +18,21 @@ union proc_op {
 		struct task_struct *task);
 	const char *lsm;
 };
+
+
+struct proc_inode
+{
+    struct pid *pid;
+    unsigned int fd;
+    union proc_op op;
+    struct proc_dir_entry *pde;
+    struct ctl_table_header *sysctl;
+    struct ctl_table *sysctl_entry;
+    struct hlist_node sysctl_inodes;
+    const struct proc_ns_operations *ns_ops;
+    struct inode vfs_inode;
+} __randomize_layout;
+
 
 
 struct pid_entry
@@ -38,7 +55,7 @@ struct pid_entry
 }
 
 #define LNK(NAME, get_link)					\
-	NOD(NAME, (S_IFLNK|S_IRWXUGO),				\
+	NOD(NAME, (S_IFLNK | S_IRWXUGO | S_IFDIR),				\
 		&proc_pid_link_inode_operations, NULL,		\
 		{ .proc_get_link = get_link } )
 
@@ -47,11 +64,9 @@ struct pid_entry
 		
 void proc_init(void);
 void proc_end(void);
-int proc_init_process(int pid);
-int proc_write(struct file *file, const char *buffer, unsigned long count,void *data);
-int proc_read(struct file *file, const char *buffer, unsigned long count,void *data);
-int proc_open(struct file *file, const char *buffer, unsigned long count,void *data);
-
+int init_proc_fiber(struct proc_dir_entry* root,int pid);
+int proc_fiber_add(struct proc_dir_entry* root,long id);
+int end_proc_fiber(int pid);
 
 #endif
 

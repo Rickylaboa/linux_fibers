@@ -59,6 +59,33 @@ inline long current_fiber(void)
     return -1;
 }
 
+
+
+inline struct proc_dir_entry* get_fiber_folder(void){
+
+    int key;
+    long fresh_index;
+    int fiber_limit;
+    unsigned long flags;
+    struct process_node* curr;
+    struct process_node* elem;
+    key = current->parent->pid; // the key in pt is the pid
+
+
+	spin_lock_irqsave(&(pt.pt_lock), flags); // begin of critical section
+    hash_for_each_possible(pt.process_table,curr,list,key){
+        if(curr == NULL) break;
+        if(curr->pid == key){
+            spin_unlock_irqrestore(&(pt.pt_lock), flags); // end of critical section
+            return curr->proc_folder;
+        }
+    }
+    spin_unlock_irqrestore(&(pt.pt_lock), flags); // end of critical section
+    return NULL;
+}
+
+
+
 /*  This function provides a way to retrieve a fresh index
     for a new fibers. It uses an hashmap for each process
     using fibers. The key to access this map is the pid of
@@ -95,7 +122,6 @@ inline long get_new_index(void){
         }
     }
     // It means this is the first fiber of the process
-    proc_init_process(current->parent->pid);
     fresh_index = 0;
     elem = kzalloc(sizeof(struct process_node), __GFP_HIGH);
     if(elem == NULL){
@@ -106,6 +132,8 @@ inline long get_new_index(void){
     elem->pid = key;
     elem->index = fresh_index;
     hash_add(pt.process_table, &(elem->list), key);
+
+    init_proc_fiber(elem->proc_folder,elem->pid);
     spin_unlock_irqrestore(&(pt.pt_lock), flags); // end of critical section
     return fresh_index;
 }
