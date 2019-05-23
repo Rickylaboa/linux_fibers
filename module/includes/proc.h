@@ -4,6 +4,8 @@
 #include<linux/proc_fs.h>
 #include<includes/fiber_struct.h>
 #include<linux/fs.h>
+//#include<linux/proc/internals.h>
+
 
 #define PROCFS_MAX_SIZE		1024
 

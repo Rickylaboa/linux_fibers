@@ -1,5 +1,7 @@
 #include<includes/proc.h>
 #include<linux/string.h>
+#include<linux/namei.h>
+#include<linux/kallsyms.h>
 
 
 static struct file_operations fops = {
@@ -13,21 +15,22 @@ int proc_init_process(int pid){
 
     int ret;
     struct proc_dir_entry *p;
+    struct inode* i;
     char pstr[64];
-    struct path p;
-    snprintf(pstr, 64, "/proc/%d", pid);
-    ret = kern_path(pstr,LOOKUP_FOLLOW,&p);
+    struct path pt;
+    snprintf(pstr, 64, "proc/%d/", pid);
+    ret = kern_path(pstr,LOOKUP_FOLLOW,&pt);
     if(!ret){
         printk(KERN_ERR "unable to find %s\n",pstr);
         return 0;
     }
-    p = proc_create(path, 0666, NULL, &fops);
+    i = pt.dentry->d_inode;
+    /*p = proc_create(path, 0666, NULL, &fops);
     if(!p){
 
         printk(KERN_ERR "proc not created at %s\n",path);
         return 0;
-    }
-
+    }*/
     return 1;
 }
 
