@@ -95,7 +95,7 @@ inline long get_new_index(void){
         }
     }
     // It means this is the first fiber of the process
-    proc_init_process(current->parent->pid);
+    //proc_init_process(current->parent->pid);
     fresh_index = 0;
     elem = kzalloc(sizeof(struct process_node), __GFP_HIGH);
     if(elem == NULL){
