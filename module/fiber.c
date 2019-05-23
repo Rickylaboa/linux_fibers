@@ -29,7 +29,7 @@ int init_module(void){
   int ret = misc_register(&mdev);
   init_hashtables(); 
   register_exit_handler();
-  proc_lookup_names();
+  proc_init();
 
   if(ret != 0){
     printk(KERN_ERR "%s: Error in misc_register() function\n", NAME);
@@ -39,6 +39,7 @@ int init_module(void){
 }
 
 void cleanup_module(void){
+  proc_end();
   free_all_tables();
   unregister_exit_handler();
   misc_deregister(&mdev);
