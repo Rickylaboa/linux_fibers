@@ -1,8 +1,19 @@
 #include<includes/proc.h>
 #include<linux/string.h>
-//#include<linux/namei.h>
-//#include<linux/kallsyms.h>
+#include<linux/namei.h>
+#include<linux/kallsyms.h>
 
+
+static int (*proc_tgid_base_readdir)(struct file*,struct dir_context*);
+static struct dentry* (*proc_tgid_base_lookup)(struct inode*,struct dentry*, unsigned int);
+static int (*proc_pident_readdir)(struct file*, struct dir_context*, const struct pid_entry*, unsigned int);
+static struct dentry* (*proc_pident_lookup)(struct inode*, struct dentry*, const struct pid_entry*, unsigned int);
+
+
+
+static struct file_operations* proc_tigid_base_operations;
+static struct inode_operations* proc_tgid_base_inode_operations;
+static struct inode_operations proc_pid_link_inode_operations;
 
 static struct file_operations fops = {
 
@@ -11,29 +22,15 @@ static struct file_operations fops = {
   .read = NULL,
 };
 
+void proc_lookup_names(){
+  proc_tgid_base_readdir = (void *) kallsyms_lookup_name("proc_tgid_base_readdir");
+  proc_tgid_base_lookup = (void*) kallsyms_lookup_name("proc_tgid_base_lookup");
+  proc_pident_readdir = (void*) kallsyms_lookup_name("proc_pident_readdir");
+  proc_pident_lookup = (void*) kallsyms_lookup_name("proc_pident_lookup");
+}
+
+
 int proc_init_process(int pid){
-
-    /*int ret;
-    struct proc_dir_entry *p;
-    struct inode* i;
-    char pstr[64];
-    struct path pt;
-    
-    snprintf(pstr, 64, "proc/%d/", pid);
-    ret = kern_path(pstr,LOOKUP_FOLLOW,&pt);
-    if(!ret){
-        printk(KERN_ERR "unable to find %s\n",pstr);
-        return 0;
-    }
-    i = pt.dentry->d_inode;
-    p = (struct proc_dir_entry*) get_proc_dir_entry(i);
-    p = proc_create(path, 0666, NULL, &fops);
-    if(!p){
-
-        printk(KERN_ERR "proc not created at %s\n",path);
-        return 0;
-    }*/
-    //printk(KERN_INFO "proc dir entry is at %p\n",p);
     return 1;
 }
 

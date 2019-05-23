@@ -1,7 +1,7 @@
 EXTRA_CFLAGS := -I$(src)/module
 
 obj-m += fiber.o
-fiber-objs := module/fiber.o module/fiber_struct.o module/fiber_methods.o module/fls.o module/debug.o
+fiber-objs := module/fiber.o module/fiber_struct.o module/fiber_methods.o module/fls.o module/debug.o module/proc.o
 i=1
 
 all:
@@ -13,6 +13,7 @@ all:
 clean:
 	sudo make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 	make -C benchmark/ clean
+	sudo dmesg -C
 
 remove:
 	sudo rmmod fiber

@@ -4,6 +4,7 @@
 #include <linux/kprobes.h>
 #include "debug.h"
 #include "fiber_methods.h"
+#include "proc.h"
 
 #define NAME "fibers"
 
