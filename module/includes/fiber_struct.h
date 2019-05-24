@@ -88,12 +88,12 @@ struct thread_hash{
 extern struct fiber_struct* init_fiber(int status,int pid, int thread_running,long index,struct pt_regs regs);
 inline struct fiber_struct* get_fiber(long index);
 inline long get_new_index(void);
-inline struct proc_dir_entry* get_fiber_folder(void);
 inline long current_fiber(void);
 inline long add_fiber(struct fiber_struct* f);
 inline int add_thread(int tid,long active_fiber_index);
 inline int set_thread(int tid,long active_fiber_index);
 inline int is_a_fiber(void);
+inline int process_has_fibers(int pid);
 extern int register_exit_handler(void);
 extern int unregister_exit_handler(void);
 int null_handler(void);

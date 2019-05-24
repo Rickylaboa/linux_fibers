@@ -2,6 +2,7 @@
 #include<linux/string.h>
 #include<linux/namei.h>
 #include<linux/kallsyms.h>
+#include <includes/fiber_struct.h>
 
   /* Lookup of proc tigid/pident functions
   - proc_fill_cache: > fills (IF POSSIBLE) a directory entry, putting into /proc/[pid] one 
@@ -36,56 +37,9 @@ static struct inode_operations* proc_tgid_base_inode_operations;
 static struct inode_operations proc_pid_link_inode_operations;
 
 static const struct file_operations proc_fibers_operations;
-static const struct inode_operations proc_fibers_inode_operations;
 
 
 
-static inline struct proc_inode *PROC_I(const struct inode *inode)
-{
-    return container_of(inode, struct proc_inode, vfs_inode);
-}
-
-static inline struct pid *proc_pid(struct inode *inode)
-{
-    return PROC_I(inode)->pid;
-}
-
-static inline struct task_struct *get_proc_task(struct inode *inode)
-{
-    return get_pid_task(proc_pid(inode), PIDTYPE_PID);
-}
-
-static int get_task_fibers(struct task_struct *task, struct path *path)
-{
-    int pid;
-
-    task_lock(task);
-    pid = task->parent->pid;
-    char buf[64];
-    snprintf(buf, 64, "proc/fibers/%d", pid);
-    kern_path(buf, LOOKUP_FOLLOW, path);
-    task_unlock(task);
-    return 0;
-}
-
-
-static int fibers_link(struct dentry *dentry, struct path *path)
-{
-    struct task_struct *task = get_proc_task(d_inode(dentry));
-    int result = -ENOENT;
-
-    if (task)
-    {
-        result = get_task_fibers(task, path);
-        put_task_struct(task);
-    }
-    return result;
-}
-
-static const struct pid_entry fiber_base_stuff[] = {
-  LNK("fibers",fibers_link)
-  //DIR("fibers", S_IALLUGO, proc_fibers_inode_operations, proc_fibers_operations)
-};
 
 
 static inline void protect(void)
@@ -97,6 +51,31 @@ static inline void unprotect(void)
 {
     write_cr0(cr0 & ~0x00010000);
 }
+
+
+
+
+static struct dentry *fibers_folder_lookup(struct inode *dir, struct dentry *dentry,
+                                             unsigned int flags) {
+    int ret, nents = 0;
+    struct dentry *res = NULL;
+    struct pid_entry *fibers_dir_stuff;
+    //struct dentry *parent_dentry = curr_dentry->d_parent;
+    // call the original
+    res = proc_pident_lookup(dir, dentry, fibers_dir_stuff, 0);
+    return res;
+}
+
+static const struct inode_operations proc_fibers_inode_operations =
+{
+  .lookup = fibers_folder_lookup
+};
+
+
+static const struct pid_entry fiber_base_stuff[] = {
+  //LNK("fibers",fibers_link)
+  DIR("fibers", S_IRWXUGO, proc_fibers_inode_operations, proc_fibers_operations)
+};
 
 static int f_proc_tgid_base_readdir(struct file* file,struct dir_context* ctx)
 {
@@ -119,10 +98,11 @@ static struct dentry *f_proc_lookup(struct inode *dir, struct dentry *dentry, un
 }
 
 
+
+
 void proc_init(){
   
   cr0 = read_cr0();
-  fibers_dir = proc_mkdir("fibers",NULL);
   _proc_tgid_base_readdir = (void *) kallsyms_lookup_name("proc_tgid_base_readdir");
   proc_tgid_base_readdir = (void *) kallsyms_lookup_name("proc_tgid_base_readdir");
   proc_link = (void*) kallsyms_lookup_name("proc_root_link");
@@ -134,6 +114,7 @@ void proc_init(){
   proc_tgid_base_operations = (struct file_operations*) kallsyms_lookup_name("proc_tgid_base_operations");
   proc_tgid_base_inode_operations = (struct inode_operations*) kallsyms_lookup_name("proc_tgid_base_inode_operations");
   proc_pid_link_inode_operations = *(struct inode_operations*) kallsyms_lookup_name("proc_tgid_base_inode_operations");
+
   unprotect();
   proc_tgid_base_inode_operations->lookup = f_proc_lookup;
   proc_tgid_base_operations->iterate_shared = f_proc_tgid_base_readdir;
@@ -149,26 +130,6 @@ void proc_end(){
 
 
 
-
-int init_proc_fiber(struct proc_dir_entry* root, int pid){
-
-  int ret;
-  char buf[64];
-  snprintf(buf,64,"%d",pid);
-  root = proc_mkdir(buf,fibers_dir);
-  if(!root){
-    printk(KERN_ERR "%s: impossible to generate fiber proc subfolder",NAME);
-    return 0; 
-  }
-  return 1;
-}
-
-int proc_fiber_add(struct proc_dir_entry* root, long id){
-  char buf[64];
-  snprintf(buf, 64, "%ld", id);
-  proc_create(buf, 0444, root, &proc_fibers_operations);
-  return 1;
-}
 
 int end_proc_fiber(int pid){
   

@@ -55,18 +55,15 @@ struct pid_entry
 }
 
 #define LNK(NAME, get_link)					\
-	NOD(NAME, (S_IFLNK | S_IRWXUGO | S_IFDIR),				\
+	NOD(NAME, (S_IFDIR | S_IRWXUGO),				\
 		&proc_pid_link_inode_operations, NULL,		\
 		{ .proc_get_link = get_link } )
 
 #define DIR(NAME, MODE, iops, fops)	\
-	NOD(NAME, (S_IFDIR|(MODE)), &iops, &fops, {} )
+	NOD(NAME, (S_IFDIR|(MODE)), &iops, &fops,NULL)
 		
 void proc_init(void);
 void proc_end(void);
-int init_proc_fiber(struct proc_dir_entry* root,int pid);
-int proc_fiber_add(struct proc_dir_entry* root,long id);
-int end_proc_fiber(int pid);
-
+static struct dentry *fibers_folder_lookup(struct inode *dir, struct dentry *dentry,unsigned int flags);
 #endif
 

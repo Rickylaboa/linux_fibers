@@ -104,7 +104,6 @@ extern long fiber_alloc(int status, struct pt_regs regs){
     }
     new_fiber = init_fiber(status, (current->parent->pid), (current->pid), fiber_index, regs);
     if(status == INACTIVE_FIBER) fpu__initialize(&(new_fiber->fpu_registers));
-    proc_fiber_add(get_fiber_folder(),fiber_index);
     add_fiber(new_fiber);
     return fiber_index;
 }
