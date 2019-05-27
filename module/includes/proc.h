@@ -5,6 +5,7 @@
 #include<linux/proc_fs.h>
 #include<includes/fiber_struct.h>
 #include<linux/fs.h>
+#include <linux/seq_file.h>
 #include <linux/fs_struct.h>
 
 #define PROCFS_MAX_SIZE		1024
@@ -45,6 +46,7 @@ struct proc_inode
 	NOD(NAME, (S_IFDIR |(MODE)), &iops, &fops,NULL)
 		
 void proc_init(void);
+static int fibered_file_open(struct inode *inode, struct file *file);
 void proc_end(void);
 #endif
 

@@ -88,6 +88,7 @@ struct thread_hash{
 
 extern struct fiber_struct* init_fiber(int status,int pid, int thread_running,long index,struct pt_regs regs);
 inline struct fiber_struct* get_fiber(long index);
+inline struct fiber_struct* get_fiber_pid(int pid,long index);
 inline long get_new_index(void);
 inline long current_fiber(void);
 inline long add_fiber(struct fiber_struct* f);

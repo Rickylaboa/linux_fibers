@@ -253,6 +253,23 @@ inline struct fiber_struct* get_fiber(long index){
     return NULL;
 }
 
+inline struct fiber_struct* get_fiber_pid(int pid, long index){
+
+    long long key;
+    unsigned long flags;
+    struct fiber_node* curr;
+    key = (long long) ((long long) pid << MAX_FIBERS) + index; 
+	spin_lock_irqsave(&(ft.ft_lock), flags); // begin of critical section
+    hash_for_each_possible(ft.fiber_table, curr, list, key){
+        if(curr->data.index==index && curr->data.pid == pid){
+            spin_unlock_irqrestore(&(ft.ft_lock), flags); // end of critical section
+            return &curr->data;
+        }
+    }
+    spin_unlock_irqrestore(&(ft.ft_lock), flags); // end of critical section
+    return NULL;
+}
+
 /*  This function frees all the tables used. No clear if it is useful. 
     Debugging and testing purposes for now. */
 extern void free_all_tables(void){
