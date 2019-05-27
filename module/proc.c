@@ -249,7 +249,7 @@ static int show_fiber_file(struct seq_file* file, void* f){
 
   fiber = (struct fiber_struct*) file->private;
   index = fiber->index;
-  seq_printf(file, "%s: %ld\n", "Fiber:",index); 
+  seq_printf(file, "%s: %ld\n", "Fiber",index); 
   return 0;
 }
 
