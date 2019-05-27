@@ -11,15 +11,6 @@
 
 
 
-union proc_op {
-	int (*proc_get_link)(struct dentry *, struct path *);
-	int (*proc_show)(struct seq_file *m,
-		struct pid_namespace *ns, struct pid *pid,
-		struct task_struct *task);
-	const char *lsm;
-};
-
-
 struct proc_inode
 {
     struct pid *pid;
@@ -35,15 +26,6 @@ struct proc_inode
 
 
 
-struct pid_entry
-{
-    const char *name;
-    unsigned int len;
-    umode_t mode;
-    const struct inode_operations *iop;
-    const struct file_operations *fop;
-    union proc_op op;
-};
 
 #define NOD(NAME, MODE, IOP, FOP, OP) {\
 	.name = (NAME),					    \
@@ -60,10 +42,9 @@ struct pid_entry
 		{ .proc_get_link = get_link } )
 
 #define DIR(NAME, MODE, iops, fops)	\
-	NOD(NAME, (S_IFDIR|(MODE)), &iops, &fops,NULL)
+	NOD(NAME, (S_IFDIR |(MODE)), &iops, &fops,NULL)
 		
 void proc_init(void);
 void proc_end(void);
-static struct dentry *fibers_folder_lookup(struct inode *dir, struct dentry *dentry,unsigned int flags);
 #endif
 

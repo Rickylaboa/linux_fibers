@@ -24,6 +24,7 @@
 #include "debug.h"
 #include "fls.h"
 #include<linux/proc_fs.h>
+#include<includes/proc.h>
 
 
 #define FIBER_BKT 8
@@ -94,6 +95,7 @@ inline int add_thread(int tid,long active_fiber_index);
 inline int set_thread(int tid,long active_fiber_index);
 inline int is_a_fiber(void);
 inline int process_has_fibers(int pid);
+inline int number_of_fibers(int pid);
 extern int register_exit_handler(void);
 extern int unregister_exit_handler(void);
 int null_handler(void);

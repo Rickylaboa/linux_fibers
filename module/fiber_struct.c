@@ -1,11 +1,9 @@
 #include <includes/fiber_struct.h>
-#include<includes/proc.h>
 
 static struct fiber_hash ft;
 static struct process_hash pt;
 static struct thread_hash tt;
 static struct kprobe exit_prober;
-
 
 
 
@@ -59,26 +57,25 @@ inline long current_fiber(void)
     return -1;
 }
 
-inline int process_has_fibers(int pid){
+inline int number_of_fibers(int pid){
 
     int key;
-    int ret;
-    int fiber_limit;
+    long ret;
     unsigned long flags;
     struct process_node* curr;
-    struct process_node* elem;
     key = pid; // the key in pt is the pid
 
     ret = 0;
 	spin_lock_irqsave(&(pt.pt_lock), flags); // begin of critical section
     hash_for_each_possible(pt.process_table,curr,list,key){
         if(curr->pid == key){
-            ret = 1;
+            ret = curr->index;
         }
     }
     spin_unlock_irqrestore(&(pt.pt_lock), flags); // end of critical section
-    return ret;
+    return (int) ret;
 }
+
 
 
 
