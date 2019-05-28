@@ -23,13 +23,14 @@
   */
 
 static unsigned long cr0;
+static struct pid_entry* tgid_base_stuff;
 static int (*proc_link)(struct dentry *, struct path *);
 static int (*_proc_tgid_base_readdir)(struct file*,struct dir_context*);
 static int (*proc_tgid_base_readdir)(struct file*,struct dir_context*);
 static struct dentry* (*proc_tgid_base_lookup)(struct inode*,struct dentry*, unsigned int);
 static int (*proc_pident_readdir)(struct file*, struct dir_context*, const struct pid_entry*, unsigned int);
 static struct dentry* (*proc_pident_lookup)(struct inode*, struct dentry*, const struct pid_entry*, unsigned int);
-
+static struct dentry* (*proc_pident_instantiate)(struct dentry *dentry,struct task_struct *task, const void *ptr);
 
 static struct file_operations* proc_tgid_base_operations;
 static struct inode_operations* proc_tgid_base_inode_operations;
@@ -228,14 +229,39 @@ static int f_proc_tgid_base_readdir(struct file* file,struct dir_context* ctx)
   return fiber_pident && actual_pident;
 }
 
+static struct dentry *f_proc_pident_lookup(struct inode *dir, 
+					 struct dentry *dentry,
+					 const struct pid_entry *p,
+					 const struct pid_entry *end)
+{
+	struct task_struct *task = get_proc_task(dir);
+	struct dentry *res = ERR_PTR(-ENOENT);
+  int pid;
+  int num_fibers;
+
+	if (!task) return res;
+  pid = task->tgid;
+  num_fibers = number_of_fibers(pid);
+  p = fiber_base_stuff;
+  if(num_fibers > 0){
+    if (!memcmp(dentry->d_name.name, p->name, p->len)) {
+			res = proc_pident_instantiate(dentry, task, p);
+		}
+  }
+	put_task_struct(task);
+	return res;
+}
+
+
 static struct dentry *f_proc_lookup(struct inode *dir, struct dentry *dentry, unsigned int flags)
 {
   struct dentry* res;
-
+  int size;
   res = proc_tgid_base_lookup(dir,dentry,flags);
-  if(IS_ERR(res) && PTR_ERR(res) == -ENOENT){ // bob
-    res = proc_pident_lookup(dir, dentry,fiber_base_stuff,(unsigned long) (fiber_base_stuff + ARRAY_SIZE(fiber_base_stuff)));
+  if(res!=ERR_PTR(-ENOENT)){
+    return res;
   }
+  res = f_proc_pident_lookup(dir,dentry,fiber_base_stuff,(unsigned int) fiber_base_stuff + ARRAY_SIZE(fiber_base_stuff));
   return res;
 }
 
@@ -251,8 +277,10 @@ void proc_init(){
   proc_tgid_base_lookup = (void*) kallsyms_lookup_name("proc_tgid_base_lookup");
   proc_pident_readdir = (void*) kallsyms_lookup_name("proc_pident_readdir");
   proc_pident_lookup = (void*) kallsyms_lookup_name("proc_pident_lookup");
+  proc_pident_instantiate = (void*) kallsyms_lookup_name("proc_pident_instantiate");
 
   /* Lookup of proc tgid operations*/
+  tgid_base_stuff = (struct pid_entry*) kallsyms_lookup_name("tgid_base_stuff");
   proc_tgid_base_operations = (struct file_operations*) kallsyms_lookup_name("proc_tgid_base_operations");
   proc_tgid_base_inode_operations = (struct inode_operations*) kallsyms_lookup_name("proc_tgid_base_inode_operations");
   proc_pid_link_inode_operations = *(struct inode_operations*) kallsyms_lookup_name("proc_tgid_base_inode_operations");
