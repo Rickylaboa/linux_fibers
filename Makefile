@@ -5,7 +5,7 @@ fiber-objs := module/fiber.o module/fiber_struct.o module/fiber_methods.o module
 i=1
 
 all:
-	sudo make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+	sudo make -Wno-missing-braces    -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
 	gcc -O2 -Wno-attributes -pthread -o usertest_1 user/usertest_1.c
 	gcc -pthread -Wno-attributes  -o usertest_2 user/usertest_2.c
 	make -C benchmark/ all
@@ -13,6 +13,8 @@ all:
 clean:
 	sudo make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 	make -C benchmark/ clean
+	sudo rm -f usertest_1.o 
+	sudo rm -f usertest_2.o
 	sudo dmesg -C
 
 remove:

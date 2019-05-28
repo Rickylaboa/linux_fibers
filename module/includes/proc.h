@@ -28,7 +28,7 @@ struct proc_inode
 
 
 
-#define NOD(NAME, MODE, IOP, FOP, OP) {\
+#define NOD(NAME, MODE, IOP, FOP, OP){\
 	.name = (NAME),					    \
 	.len  = sizeof(NAME) - 1,			 \
 	.mode = MODE,					      \
@@ -46,7 +46,6 @@ struct proc_inode
 	NOD(NAME, (S_IFDIR |(MODE)), &iops, &fops,NULL)
 		
 void proc_init(void);
-static int fibered_file_open(struct inode *inode, struct file *file);
 void proc_end(void);
 #endif
 

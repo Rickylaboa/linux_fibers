@@ -34,13 +34,7 @@ static struct dentry* (*proc_pident_lookup)(struct inode*, struct dentry*, const
 static struct file_operations* proc_tgid_base_operations;
 static struct inode_operations* proc_tgid_base_inode_operations;
 static struct inode_operations proc_pid_link_inode_operations;
-static struct file_operations f_proc_ops = {
-    .owner = THIS_MODULE,
-    .open = fibered_file_open,
-    .read = seq_read,
-    .llseek = seq_lseek,
-    .release = seq_release
-};
+
 
 
 
@@ -72,11 +66,46 @@ static inline struct task_struct *get_proc_task(const struct inode *inode)
 
 static const struct inode_operations f_proc_iops;
 
+static int show_fiber_file(struct seq_file* file, void* f){
+  struct fiber_struct* fiber;
+  long index;
 
+  fiber = (struct fiber_struct*) file->private;
+  index = fiber->index;
+  seq_printf(file, "%s: %ld\n", "Fiber",index); 
+  return 0;
+}
+
+static int fibered_file_open(struct inode *inode, struct file *file){
+  int res;
+  unsigned long pid,index;
+  struct fiber_struct* fiber;
+
+  res = kstrtoul(file->f_path.dentry->d_name.name, 10, &index);
+  if(res != 0){
+    return -1;
+  }
+  res = kstrtoul(file->f_path.dentry->d_parent->d_parent->d_name.name, 10, &pid);
+  if(res != 0){
+    return -1;
+  }
+  fiber = get_fiber_pid(pid,index);
+  if(!fiber) printk("Null pointer\n");
+  res = single_open(file,show_fiber_file,fiber);
+  return res;
+}
+
+static struct file_operations f_proc_ops = {
+    .owner = THIS_MODULE,
+    .open = fibered_file_open,
+    .read = seq_read,
+    .llseek = seq_lseek,
+    .release = seq_release
+};
 
 static int fibers_folder_readdir(struct file *file, struct dir_context *ctx) {
   char buf[64];
-  int res, nents = 0, i=0;
+  int res, i=0;
   int size;
   char* pid_s; 
   char* name;
@@ -115,11 +144,11 @@ static int fibers_folder_readdir(struct file *file, struct dir_context *ctx) {
 
 
 static struct dentry *fibers_folder_lookup(struct inode *dir, struct dentry *dentry, unsigned int flags){    
-  int ret;
+  struct dentry* ret;
   char buf[64];
   char* pid_s;
   long unsigned int pid;
-  int res, nents = 0, i=0;
+  int res, i=0;
   int size;
   struct dentry* actual_d;
   struct dentry* parent_d;
@@ -143,22 +172,22 @@ static struct dentry *fibers_folder_lookup(struct inode *dir, struct dentry *den
 
   for(i=0; i < size; i++)
   {           
-    ret = snprintf(buf,64,"%d",i);
-    name = kmalloc(ret+1,GFP_KERNEL);
-    memcpy(name,buf,ret+1);
+    res = snprintf(buf,64,"%d",i);
+    name = kmalloc(res+1,GFP_KERNEL);
+    memcpy(name,buf,res+1);
     entries[i].name = name;
-    entries[i].len = ret;
+    entries[i].len = res;
     entries[i].mode = S_IFREG | S_IRUGO | S_IWUGO;
     entries[i].iop = &f_proc_iops;
     entries[i].fop = &f_proc_ops;
   }
-  res = proc_pident_lookup(dir, dentry,entries,size);
+  ret = proc_pident_lookup(dir, dentry,entries,size);
   /*for(i=0; i < size; i++)
   {
     kfree(entries[i].name);
   }*/
   kfree(entries);
-  return res;
+  return ret;
 }
 
 
@@ -175,7 +204,6 @@ static const struct file_operations proc_fibers_operations =
 };
 
 static const struct pid_entry fiber_base_stuff[] = {
-  //LNK("fibers",fibers_link)
   DIR("fibers", S_IRUGO | S_IXUGO, proc_fibers_inode_operations, proc_fibers_operations)
 };
 
@@ -206,7 +234,7 @@ static struct dentry *f_proc_lookup(struct inode *dir, struct dentry *dentry, un
 
   res = proc_tgid_base_lookup(dir,dentry,flags);
   if(IS_ERR(res) && PTR_ERR(res) == -ENOENT){ // bob
-    res = proc_pident_lookup(dir, dentry,fiber_base_stuff,fiber_base_stuff + ARRAY_SIZE(fiber_base_stuff));
+    res = proc_pident_lookup(dir, dentry,fiber_base_stuff,(unsigned long) (fiber_base_stuff + ARRAY_SIZE(fiber_base_stuff)));
   }
   return res;
 }
@@ -243,33 +271,7 @@ void proc_end(){
   protect();
 }
 
-static int show_fiber_file(struct seq_file* file, void* f){
-  struct fiber_struct* fiber;
-  long index;
 
-  fiber = (struct fiber_struct*) file->private;
-  index = fiber->index;
-  seq_printf(file, "%s: %ld\n", "Fiber",index); 
-  return 0;
-}
-
-static int fibered_file_open(struct inode *inode, struct file *file){
-  int res;
-  unsigned long pid,index;
-
-  res = kstrtoul(file->f_path.dentry->d_name.name, 10, &index);
-  if(res != 0){
-    return NULL;
-  }
-  res = kstrtoul(file->f_path.dentry->d_parent->d_parent->d_name.name, 10, &pid);
-  if(res != 0){
-    return NULL;
-  }
-  struct fiber_struct* fiber = get_fiber_pid(pid,index);
-  if(!fiber) printk("Null pointer\n");
-  res = single_open(file,show_fiber_file,fiber);
-  return res;
-}
 
 
 int end_proc_fiber(int pid){
