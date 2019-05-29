@@ -44,6 +44,8 @@ static struct inode_operations* proc_tgid_base_inode_operations;
 static struct inode_operations proc_pid_link_inode_operations;
 static struct dentry_operations* pid_dentry_operations;
 
+static const struct inode_operations f_proc_iops;
+
 
 
 
@@ -72,8 +74,9 @@ static inline struct task_struct *get_proc_task(const struct inode *inode)
 	return get_pid_task(proc_pid(inode), PIDTYPE_PID);
 }
 
-static const struct inode_operations f_proc_iops;
 
+/*  Function used as a parser to read the specific sequential
+    file of a single fiber within a process.*/
 static int show_fiber_file(struct seq_file* file, void* f){
   struct fiber_struct* fiber;
   long index;
@@ -84,6 +87,10 @@ static int show_fiber_file(struct seq_file* file, void* f){
   return 0;
 }
 
+/*  Function to open a specific sequencial file representing
+    a fiber within a process, issuing a call to single_open
+    in order to attach the fiber_struct to the field "private"
+    of the file and to allow any subsequent reading. */
 static int fibered_file_open(struct inode *inode, struct file *file){
   int res;
   unsigned long pid,index;
@@ -111,6 +118,7 @@ static struct file_operations f_proc_ops = {
     .release = seq_release
 };
 
+/* Usefull stuff to the implementation of "proc_pident_instantiate" */
 static void pid_update_inode(struct task_struct *task, struct inode *inode)
 {
 	task_dump_owner(task, inode->i_mode, &inode->i_uid, &inode->i_gid);
@@ -119,6 +127,8 @@ static void pid_update_inode(struct task_struct *task, struct inode *inode)
 	security_task_to_inode(task, inode);
 }
 
+/* Implementation of proc_pident_instantiate from kernel version
+    4.15.0*/
 static struct dentry *proc_pident_instantiate(struct dentry *dentry,
 	struct task_struct *task, const void *ptr)
 {
@@ -144,7 +154,8 @@ static struct dentry *proc_pident_instantiate(struct dentry *dentry,
 }
 
 
-
+/* Function that allows to read into the directory /proc/[pid]/fibers, 
+  allowing to show correctly all the fibers of the process, if present.*/
 static int fibers_folder_readdir(struct file *file, struct dir_context *ctx) {
   char buf[64];
   int res, i=0;
@@ -188,7 +199,8 @@ static int fibers_folder_readdir(struct file *file, struct dir_context *ctx) {
 
 
 
-
+/*  Function allowing the lookup into /proc/[pid]/fibers directory,
+    if present. */
 static struct dentry *fibers_folder_lookup(struct inode *dir, struct dentry *dentry, unsigned int flags){    
   struct dentry* ret;
   char buf[64];
@@ -249,10 +261,13 @@ static const struct file_operations proc_fibers_operations =
   .llseek = generic_file_llseek
 };
 
+/* Fibers folder, to add to /proc/[pid] */
 static const struct pid_entry fiber_base_stuff[] = {
   DIR("fibers", S_IRUGO | S_IXUGO, proc_fibers_inode_operations, proc_fibers_operations)
 };
 
+/* Function allowing the reading of the /proc/[pid] directory, replacing
+  proc_tgid_base_readdir, in order to show also the /fibers folder if present.*/
 static int f_proc_tgid_base_readdir(struct file* file,struct dir_context* ctx)
 {
   struct inode* dir;
@@ -274,6 +289,8 @@ static int f_proc_tgid_base_readdir(struct file* file,struct dir_context* ctx)
   return fiber_pident && actual_pident;
 }
 
+/* Function allowing the lookup of the /proc/[pid]/fibers directory, replacing the generic
+  proc_pident_lookup into our specific lookup of the /proc/pid. */
 static struct dentry *f_proc_pident_lookup(struct inode *dir, 
 					 struct dentry *dentry,
 					 const struct pid_entry *p)
@@ -295,7 +312,8 @@ static struct dentry *f_proc_pident_lookup(struct inode *dir,
 	return res;
 }
 
-
+/* Function replacing proc_lookup in order to allow a correct lookup into
+  the /proc/[pid]/fibers folder. */
 static struct dentry *f_proc_lookup(struct inode *dir, struct dentry *dentry, unsigned int flags)
 {
   struct dentry* res;
@@ -346,10 +364,3 @@ void proc_end(){
   protect();
 }
 
-
-
-
-int end_proc_fiber(int pid){
-  
-  return 1;
-}
