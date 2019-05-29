@@ -12,13 +12,15 @@
                           proc_fill_cache, incrementing the unique number identifing 
                           each single subfolder or file. 
 
-  - proc_tgid_base_readdir: (TO HACK!) > calls proc_pident_readdir to pass all
-                          the process stuff. We have to hack it to pass it also
-                          the "/fibers/" subfolder. 
+  - proc_tgid_base_readdir: > calls proc_pident_readdir to pass all
+                          the process stuff, in order to get all /proc/[pid]
+                          entries during an "ls" command. 
   - proc_pident_lookup: > search the subfolder with the passed path, returning the
                           dentry if possible.
-  - proc_tgid_base_lookup: (TO HACK) > returns the array of tgid_stuff calling pident
-                          lookup.  
+  - proc_tgid_base_lookup: > calls proc_pident_lookup to pass all
+                          the process stuff, in order to get the right
+                          subfolder/file issuing a command "cd /proc/[pid]/x".
+  - proc_pident_instantiate: > instantiates a subfolder or file of /proc/[pid].
   
   */
 
@@ -30,12 +32,17 @@ static int (*proc_tgid_base_readdir)(struct file*,struct dir_context*);
 static struct dentry* (*proc_tgid_base_lookup)(struct inode*,struct dentry*, unsigned int);
 static int (*proc_pident_readdir)(struct file*, struct dir_context*, const struct pid_entry*, unsigned int);
 static struct dentry* (*proc_pident_lookup)(struct inode*, struct dentry*, const struct pid_entry*, unsigned int);
-static struct dentry* (*proc_pident_instantiate)(struct dentry *dentry,struct task_struct *task, const void *ptr);
+//static struct dentry* (*proc_pident_instantiate)(struct inode *dir, struct dentry *dentry,struct task_struct *task, const void *ptr);
+struct inode* (*proc_pid_make_inode)(struct super_block * sb,struct task_struct *task, umode_t mode);
+int* (*pid_revalidate)(struct dentry *dentry, unsigned int flags);
+void* (*task_dump_owner)(struct task_struct *task, umode_t mode,kuid_t *ruid, kgid_t *rgid);
+void* (*security_task_to_inode)(struct task_struct *p, struct inode *inode);
+
 
 static struct file_operations* proc_tgid_base_operations;
 static struct inode_operations* proc_tgid_base_inode_operations;
 static struct inode_operations proc_pid_link_inode_operations;
-
+static struct dentry_operations* pid_dentry_operations;
 
 
 
@@ -104,6 +111,40 @@ static struct file_operations f_proc_ops = {
     .release = seq_release
 };
 
+static void pid_update_inode(struct task_struct *task, struct inode *inode)
+{
+	task_dump_owner(task, inode->i_mode, &inode->i_uid, &inode->i_gid);
+
+	inode->i_mode &= ~(S_ISUID | S_ISGID);
+	security_task_to_inode(task, inode);
+}
+
+static struct dentry *proc_pident_instantiate(struct dentry *dentry,
+	struct task_struct *task, const void *ptr)
+{
+	const struct pid_entry *p = ptr;
+	struct inode *inode;
+	struct proc_inode *ei;
+
+	inode = proc_pid_make_inode(dentry->d_sb, task, p->mode);
+	if (!inode)
+		return ERR_PTR(-ENOENT);
+
+	ei = PROC_I(inode);
+	if (S_ISDIR(inode->i_mode))
+		set_nlink(inode, 2);	/* Use getattr to fix if necessary */
+	if (p->iop)
+		inode->i_op = p->iop;
+	if (p->fop)
+		inode->i_fop = p->fop;
+	ei->op = p->op;
+	pid_update_inode(task, inode);
+	d_set_d_op(dentry, pid_dentry_operations);
+	return d_splice_alias(inode, dentry);
+}
+
+
+
 static int fibers_folder_readdir(struct file *file, struct dir_context *ctx) {
   char buf[64];
   int res, i=0;
@@ -137,6 +178,10 @@ static int fibers_folder_readdir(struct file *file, struct dir_context *ctx) {
     entries[i].fop = &f_proc_ops;
   }
   res = proc_pident_readdir(file,ctx,entries,size);
+  for(i=0; i < size; i++)
+  {
+    kfree(entries[i].name);
+  }
   kfree(entries);
   return res;
 }
@@ -183,10 +228,10 @@ static struct dentry *fibers_folder_lookup(struct inode *dir, struct dentry *den
     entries[i].fop = &f_proc_ops;
   }
   ret = proc_pident_lookup(dir, dentry,entries,size);
-  /*for(i=0; i < size; i++)
+  for(i=0; i < size; i++)
   {
     kfree(entries[i].name);
-  }*/
+  }
   kfree(entries);
   return ret;
 }
@@ -231,8 +276,7 @@ static int f_proc_tgid_base_readdir(struct file* file,struct dir_context* ctx)
 
 static struct dentry *f_proc_pident_lookup(struct inode *dir, 
 					 struct dentry *dentry,
-					 const struct pid_entry *p,
-					 const struct pid_entry *end)
+					 const struct pid_entry *p)
 {
 	struct task_struct *task = get_proc_task(dir);
 	struct dentry *res = ERR_PTR(-ENOENT);
@@ -242,7 +286,6 @@ static struct dentry *f_proc_pident_lookup(struct inode *dir,
 	if (!task) return res;
   pid = task->tgid;
   num_fibers = number_of_fibers(pid);
-  p = fiber_base_stuff;
   if(num_fibers > 0){
     if (!memcmp(dentry->d_name.name, p->name, p->len)) {
 			res = proc_pident_instantiate(dentry, task, p);
@@ -261,7 +304,7 @@ static struct dentry *f_proc_lookup(struct inode *dir, struct dentry *dentry, un
   if(res!=ERR_PTR(-ENOENT)){
     return res;
   }
-  res = f_proc_pident_lookup(dir,dentry,fiber_base_stuff,(unsigned int) fiber_base_stuff + ARRAY_SIZE(fiber_base_stuff));
+  res = f_proc_pident_lookup(dir,dentry,fiber_base_stuff);
   return res;
 }
 
@@ -277,10 +320,14 @@ void proc_init(){
   proc_tgid_base_lookup = (void*) kallsyms_lookup_name("proc_tgid_base_lookup");
   proc_pident_readdir = (void*) kallsyms_lookup_name("proc_pident_readdir");
   proc_pident_lookup = (void*) kallsyms_lookup_name("proc_pident_lookup");
-  proc_pident_instantiate = (void*) kallsyms_lookup_name("proc_pident_instantiate");
+  //proc_pident_instantiate = (void*) kallsyms_lookup_name("proc_pident_instantiate");
+  proc_pid_make_inode = (void*)  kallsyms_lookup_name("proc_pid_make_inode");
+  task_dump_owner = (void*) kallsyms_lookup_name("task_dump_owner");
+  security_task_to_inode = (void*) kallsyms_lookup_name("security_task_to_inode");
 
   /* Lookup of proc tgid operations*/
   tgid_base_stuff = (struct pid_entry*) kallsyms_lookup_name("tgid_base_stuff");
+  pid_dentry_operations = (struct dentry_operations*) kallsyms_lookup_name("pid_dentry_operations");
   proc_tgid_base_operations = (struct file_operations*) kallsyms_lookup_name("proc_tgid_base_operations");
   proc_tgid_base_inode_operations = (struct inode_operations*) kallsyms_lookup_name("proc_tgid_base_inode_operations");
   proc_pid_link_inode_operations = *(struct inode_operations*) kallsyms_lookup_name("proc_tgid_base_inode_operations");
