@@ -36,9 +36,9 @@ struct proc_inode
 	.op   = OP,					             \
 }
 
-#define LNK(NAME, get_link)					\
-	NOD(NAME, (S_IFDIR | S_IRWXUGO),				\
-		&proc_pid_link_inode_operations, {},		\
+#define LNK(NAME, get_link)						\
+	NOD(NAME, (S_IFDIR | S_IRWXUGO),			 \
+		&proc_pid_link_inode_operations, {},	  \
 		{ .proc_get_link = get_link } )
 
 #define DIR(NAME, MODE, iops, fops)	\
