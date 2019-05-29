@@ -1,5 +1,7 @@
 #include <includes/fiber_methods.h>
 
+spinlock_t info_lock;
+
 /* Function to create a new (inactive) fiber, initialized
     with the userspace data: ip( instruction pointer), 
     sp (stack pointer) and di. It calls fiber alloc*/
@@ -24,7 +26,6 @@ extern long fiber_convert(void){
     int ret = 0;
     long fiber_index;
     struct pt_regs regs = *task_pt_regs(current);
-    printk(KERN_INFO "%s: pid is %d\n",NAME,current->parent->pid);
 
     fiber_index = fiber_alloc(ACTIVE_FIBER, regs);
     ret = add_thread(current->pid, fiber_index);
@@ -47,6 +48,8 @@ extern long fiber_switch(long index){
     struct fiber_struct *next_fiber;
     struct fpu *curr_fpu_regs;
     struct fpu *next_fpu_regs;
+    ktime_t actual_time;
+    unsigned long flags;
     long current_index;
     if(unlikely(!is_a_fiber())) return -1; // If not a fiber, it must before issue a convert!
     current_index = current_fiber();
@@ -66,13 +69,20 @@ extern long fiber_switch(long index){
     }
     next_status = test_and_set_bit(0, &(next_fiber->status));
     if(next_status == ACTIVE_FIBER){
-        //printk(KERN_ERR "%s: %ld is running (from %ld)\n",NAME,next_fiber->index,curr_fiber->index);
+        printk(KERN_INFO "%s: failed activation of %ld\n",NAME,index);
+        atomic_inc(&(next_fiber->failed_activations));
         return -1;
     }
+    // I'm sure that only one thread will reach this point, so no need for spinlocks
     test_and_clear_bit(0, &(curr_fiber->status));
+
+    /*actual_time = ktime_get();
+    curr_fiber->total_time = ktime_add(curr_fiber->total_time,ktime_sub(actual_time,curr_fiber->start_time));
+    next_fiber->start_time = actual_time;*/
 
     curr_fiber->registers = *regs;
     *regs = next_fiber->registers;
+    next_fiber->current_activations++;  
 
     curr_fpu_regs = &(curr_fiber->fpu_registers);
     next_fpu_regs = &(next_fiber->fpu_registers);
@@ -107,8 +117,11 @@ extern long fiber_alloc(int status, struct pt_regs regs){
         preempt_disable();
         fpu__initialize(&(new_fiber->fpu_registers));
         preempt_enable();
+    }else{
+        new_fiber->current_activations = 1;
     }
     
     add_fiber(new_fiber);
+    //new_fiber->start_time = ktime_get();
     return fiber_index;
 }

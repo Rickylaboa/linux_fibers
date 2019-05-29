@@ -80,7 +80,17 @@ static int show_fiber_file(struct seq_file* file, void* f){
 
   fiber = (struct fiber_struct*) file->private;
   index = fiber->index;
-  seq_printf(file, "%s: %ld\n", "Fiber", index); 
+  seq_printf(file, "%s %ld\n", "Fiber", index); 
+  if(fiber->status == ACTIVE_FIBER){
+    seq_printf(file, "%s\n", "Status: active fiber"); 
+  }else{
+    seq_printf(file, "%s\n", "Status: inactive fiber"); 
+  }
+  seq_printf(file, "%s: %lx\n", "Entry Point", fiber->entry_point); 
+  seq_printf(file, "%s: %d\n", "Creator Thread ID", fiber->thread_created); 
+  seq_printf(file, "%s: %ld\n", "Current Activations", fiber->current_activations); 
+  seq_printf(file, "%s: %d\n", "Failed Activations", atomic_read(&(fiber->failed_activations))); 
+  seq_printf(file, "%s: %lld\n", "Total Execution Time",fiber->total_time); 
   return 0;
 }
 

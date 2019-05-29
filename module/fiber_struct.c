@@ -136,6 +136,7 @@ extern struct fiber_struct* init_fiber(int status, int pid, int thread_running, 
 
     struct fiber_struct* new_fiber;
     struct fls_list* new_fls_list;
+    unsigned long ip;
     new_fiber =  kzalloc(sizeof(struct fiber_struct), __GFP_HIGH);
     if(unlikely(!new_fiber)){
         printk(KERN_ERR "%s: error in kzalloc\n", NAME);
@@ -147,9 +148,14 @@ extern struct fiber_struct* init_fiber(int status, int pid, int thread_running, 
         printk(KERN_ERR "%s: error in kzalloc\n", NAME);
         return NULL;   
     }
+    ip = regs.ip;
 
     new_fiber->status = status;
     new_fiber->pid = pid;
+    new_fiber->entry_point = (unsigned long) ip;
+    new_fiber->thread_created = current->pid;
+    new_fiber->current_activations = 0;
+    atomic_set(&(new_fiber->failed_activations), 0);
     new_fiber->thread_running = thread_running;
     new_fiber->index = index;
     new_fiber->registers = regs;

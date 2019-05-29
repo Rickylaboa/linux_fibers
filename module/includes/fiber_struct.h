@@ -25,6 +25,9 @@
 #include "fls.h"
 #include<linux/proc_fs.h>
 #include<includes/proc.h>
+#include<linux/ktime.h>
+#include<linux/timekeeping.h>
+#include <asm/atomic.h>
 
 
 #define FIBER_BKT 8
@@ -36,10 +39,17 @@
 
 struct fiber_struct{
     int pid;
+    int thread_created; // thread id from which the fiber was created
     int thread_running;
     unsigned long status;
+    unsigned long current_activations;
+    atomic_t failed_activations;
+    ktime_t start_time;
+    ktime_t total_time;
     long index;
     long max_fls_index;
+    unsigned long entry_point;
+    spinlock_t info_lock;
     struct fls_list* free_fls_indexes;
     DECLARE_HASHTABLE(fls_table, 5);
     struct pt_regs registers;
