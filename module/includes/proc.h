@@ -5,8 +5,8 @@
 #include<linux/proc_fs.h>
 #include<includes/fiber_struct.h>
 #include<linux/fs.h>
-#include <linux/seq_file.h>
-#include <linux/fs_struct.h>
+#include<linux/seq_file.h>
+#include<linux/fs_struct.h>
 
 #define PROCFS_MAX_SIZE		1024
 
@@ -47,4 +47,3 @@ struct proc_inode
 void proc_init(void);
 void proc_end(void);
 #endif
-
