@@ -8,7 +8,7 @@
 #include<linux/seq_file.h>
 #include<linux/fs_struct.h>
 
-#define PROCFS_MAX_SIZE		1024
+#define PROCFS_MAX_SIZE	1024
 
 
 struct proc_inode
