@@ -41,7 +41,6 @@ int init_module(void){
 
 void cleanup_module(void){
   proc_end();
-  free_all_tables();
   unregister_exit_handler();
   misc_deregister(&mdev);
 }
