@@ -23,27 +23,32 @@ remove:
 insert:
 	sudo insmod fiber.ko
 
-testpell5:	
+btest_5:	
 	while true; do \
     	./benchmark/test 5  ; \
 	done
 
-testpell50:	
+btest_50:	
 	while true; do \
     	./benchmark/test 50  ; \
 	done
 
-testpell100:	
+btest_100:	
 	while true; do \
     	./benchmark/test 100  ; \
 	done
 
-testpell600:	
+btest_500:	
 	while true; do \
-    	./benchmark/test 600  ; \
+    	./benchmark/test 500  ; \
 	done
 
-testpell:
+btest_1000:	
+	while true; do \
+    	./benchmark/test 1000  ; \
+	done
+
+btest:
 	./benchmark/test 5
 	./benchmark/test 10
 	./benchmark/test 100

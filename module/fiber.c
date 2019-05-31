@@ -68,8 +68,8 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
 
 	switch(cmd)
 	{
-		case IOCTL_CONVERT: // Userspace requires to convert a thread to fiber
-			ret = fiber_convert();
+		case IOCTL_CONVERT: // Userspace requires to convert a thread to fiber      
+      ret = fiber_convert();
       //printk(KERN_INFO "%s: convert\n",NAME);
       return ret;
 
