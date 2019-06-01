@@ -50,11 +50,11 @@ extern long fiber_switch(long index){
     struct fpu *next_fpu_regs;
     ktime_t actual_time;
     ktime_t slice;
-    unsigned long flags;
+    //unsigned long flags;
     long current_index;
     current_index = current_fiber();
     regs = task_pt_regs(current);
-    printk(KERN_INFO "%s: %p\n",regs->ip);
+    printk(KERN_INFO "%s: %ld\n", NAME, regs->ip);
     if(unlikely(current_index == index)) return -1; 
     curr_fiber = get_fiber(current_index);
     next_fiber = get_fiber(index);

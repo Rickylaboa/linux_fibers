@@ -90,7 +90,7 @@ static int show_fiber_file(struct seq_file* file, void* f){
   seq_printf(file, "%s: %d\n", "Creator Thread ID", fiber->thread_created); 
   seq_printf(file, "%s: %ld\n", "Current Activations", fiber->current_activations); 
   seq_printf(file, "%s: %d\n", "Failed Activations", atomic_read(&(fiber->failed_activations))); 
-  seq_printf(file, "%s: %lld\n", "Total Execution Time",fiber->total_time); 
+  seq_printf(file, "%s: %ld\n", "Total Execution Time",fiber->total_time); 
   return 0;
 }
 
@@ -331,7 +331,6 @@ static struct dentry *f_proc_pident_lookup(struct inode *dir,
 static struct dentry *f_proc_lookup(struct inode *dir, struct dentry *dentry, unsigned int flags)
 {
   struct dentry *res;
-  int size;
   res = proc_tgid_base_lookup(dir, dentry, flags);
   if(res != ERR_PTR(-ENOENT)){
     return res;
