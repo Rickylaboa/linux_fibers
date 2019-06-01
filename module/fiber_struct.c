@@ -58,6 +58,8 @@ inline long current_fiber(void)
     return -1;
 }
 
+/*  This function retrieves the number of fibers
+    of a process, by pid. */
 inline int number_of_fibers(int pid){
 
     int key;
@@ -238,7 +240,8 @@ inline int set_thread(int tid,long active_fiber_index){
 }
 
 /*  This functions retrieves a fiber by index into the
-    fiber hashtable. It uses a spinlock to access the table. */
+    fiber hashtable with the current pid. 
+    It uses a spinlock to access the table. */
 inline struct fiber_struct* get_fiber(long index){
 
     long long key;
@@ -257,6 +260,8 @@ inline struct fiber_struct* get_fiber(long index){
     return NULL;
 }
 
+/*  This functions retrieves a fiber by index into the
+    fiber hashtable, given a pid. It uses a spinlock to access the table. */
 inline struct fiber_struct* get_fiber_pid(int pid, long index){
 
     long long key;
@@ -276,7 +281,8 @@ inline struct fiber_struct* get_fiber_pid(int pid, long index){
     return NULL;
 }
 
-
+/*  Function to register with kprobes the handlers for do_exit, used
+    to remove all fiber data from hashtables and to free memory. */
 extern int register_exit_handler(void){
     int ret;
     exit_prober.symbol_name  = "do_exit";
@@ -385,6 +391,3 @@ int exit_handler(void){
 
     return 0;
 }
-
-
-
