@@ -103,7 +103,7 @@ inline long get_new_index(void);
 inline long current_fiber(void);
 inline long add_fiber(struct fiber_struct* f);
 inline int add_thread(int tid,long active_fiber_index);
-inline int set_thread(int tid,long active_fiber_index);
+inline void set_thread(int tid,long active_fiber_index);
 inline int is_a_fiber(void);
 inline int process_has_fibers(int pid);
 inline int number_of_fibers(int pid);

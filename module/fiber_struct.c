@@ -218,9 +218,8 @@ inline int add_thread(int tid,long active_fiber_index){
 /*  This function sets a new active fiber index in a thread, if it exists
     into the thread hashtable. It uses a spinlock to access the table and
     returns 1 on success, 0 on failure*/
-inline int set_thread(int tid,long active_fiber_index){
+inline void set_thread(int tid, long active_fiber_index){
 
-    int res;
     int key;
     struct thread_node* curr;
     struct thread_node* selected;
@@ -231,12 +230,11 @@ inline int set_thread(int tid,long active_fiber_index){
     hash_for_each_possible_rcu(tt.thread_table, curr, list, key){
         if(curr->tid == key){
             selected = curr;
-            selected->active_fiber_index=active_fiber_index;
+            selected->active_fiber_index = active_fiber_index;
             break;
         }
     }
     spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of critical section
-    return res;
 }
 
 /*  This functions retrieves a fiber by index into the
