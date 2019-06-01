@@ -303,9 +303,7 @@ static int f_proc_tgid_base_readdir(struct file *file, struct dir_context *ctx)
 
 /* Function allowing the lookup of the /proc/[pid]/fibers directory, replacing the generic
   proc_pident_lookup into our specific lookup of the /proc/pid. */
-static struct dentry *f_proc_pident_lookup(struct inode *dir, 
-					 struct dentry *dentry,
-					 const struct pid_entry *p)
+static struct dentry *f_proc_pident_lookup(struct inode *dir, struct dentry *dentry, const struct pid_entry *p)
 {
 	struct task_struct *task = get_proc_task(dir);
 	struct dentry *res = ERR_PTR(-ENOENT);
@@ -376,4 +374,3 @@ void proc_end(){
   proc_tgid_base_operations->iterate_shared = proc_tgid_base_readdir;
   protect();
 }
-
