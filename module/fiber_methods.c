@@ -118,12 +118,12 @@ extern long fiber_alloc(int status, struct pt_regs regs){
         preempt_disable();
         fpu__initialize(&(new_fiber->fpu_registers));
         preempt_enable();
-        /*new_fiber->start_time = ktime_sub(temp,temp);
-        new_fiber->total_time = ktime_sub(temp,temp);*/
+        new_fiber->start_time = ktime_sub(temp,temp);
+        new_fiber->total_time = ktime_sub(temp,temp);
     }else{
         new_fiber->current_activations = 1;
-        /*new_fiber->start_time = ktime_get();
-        new_fiber->total_time = ktime_sub(temp,temp);*/
+        new_fiber->start_time = ktime_get();
+        new_fiber->total_time = ktime_sub(temp,temp);
 
     }
     

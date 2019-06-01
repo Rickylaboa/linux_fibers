@@ -237,12 +237,6 @@ inline int set_thread(int tid,long active_fiber_index){
     return res;
 }
 
-
-/*  To do! */
-extern void remove_fiber(long index){ // TO MODIFY
-    return;
-}
-
 /*  This functions retrieves a fiber by index into the
     fiber hashtable. It uses a spinlock to access the table. */
 inline struct fiber_struct* get_fiber(long index){
