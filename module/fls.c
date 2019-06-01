@@ -1,4 +1,4 @@
-#include <includes/fls.h>
+#include<includes/fls.h>
 
 static spinlock_t fls_lock;
 static unsigned long fl;
@@ -9,6 +9,7 @@ static unsigned long fl;
     the max_fls_index is incremented, the data are allocated and the
     fls index is returned to userspace. */
 long fls_alloc(void){
+
     struct fiber_struct* f = get_fiber(current_fiber());
     struct fls_list *first;
     struct fls_data *data;
@@ -20,7 +21,8 @@ long fls_alloc(void){
     data = kzalloc(sizeof(struct fls_data), __GFP_HIGH);
     if(!data){
         printk(KERN_ERR "%s: Error in kzalloc()\n", NAME);
-        spin_unlock_irqrestore(&(fls_lock),fl);//end of cs
+        spin_unlock_irqrestore(&(fls_lock), fl);//end of cs
+
         return -1;
     }
     if(!first){
@@ -58,6 +60,7 @@ int fls_free(long index){
         if(!first){
             printk(KERN_ERR "%s: Error in kzalloc()\n", NAME);
             spin_unlock_irqrestore(&(fls_lock),fl);//end of cs
+
             return -1;
         }
         first->index = index;
@@ -85,19 +88,21 @@ void *fls_get_value(long index){
     hash_for_each_possible(f->fls_table, data, list, index){
         if(data->index == index){
             spin_unlock_irqrestore(&(fls_lock),fl);//end of cs
+
             return data->value;
         }
     }
     spin_unlock_irqrestore(&(fls_lock),fl);//end of cs
+
     return NULL;
 }
 
 /*  This function sets a new value for the passed index,
     searching the current value in the hash table and 
     replacing it with the passed value. */
-void fls_set_value(long index, void* value){
+void fls_set_value(long index, void *value){
 
-    struct fiber_struct* f = get_fiber(current_fiber());
+    struct fiber_struct *f = get_fiber(current_fiber());
     struct fls_data *data;
 
     spin_lock_irqsave(&(fls_lock), fl); // begin of allfibers cs
@@ -106,6 +111,5 @@ void fls_set_value(long index, void* value){
             data->value = value;
         }
     }
-    spin_unlock_irqrestore(&(fls_lock),fl);//end of cs
-
+    spin_unlock_irqrestore(&(fls_lock), fl);//end of cs
 }
