@@ -1,4 +1,4 @@
-#ifndef FIBER_STRUCT_H // Fabio Marra's copyright
+#ifndef FIBER_STRUCT_H 
 #define FIBER_STRUCT_H
 
 #include<linux/kernel.h>
@@ -19,16 +19,15 @@
 #include<linux/syscalls.h>
 #include<linux/spinlock.h> 
 #include<linux/hashtable.h>
-#include <linux/list.h>
-#include <linux/kprobes.h>
-#include "debug.h"
-#include "fls.h"
+#include<linux/list.h>
+#include<linux/kprobes.h>
+#include"debug.h"
+#include"fls.h"
 #include<linux/proc_fs.h>
 #include<includes/proc.h>
 #include<linux/ktime.h>
 #include<linux/timekeeping.h>
-#include <asm/atomic.h>
-
+#include<asm/atomic.h>
 
 #define FIBER_BKT 8
 #define PROCESS_BKT 15
@@ -38,6 +37,7 @@
 
 
 struct fiber_struct{
+
     int pid;
     int thread_created; // thread id from which the fiber was created
     int thread_running;
@@ -56,18 +56,20 @@ struct fiber_struct{
     struct fpu fpu_registers;
 };
 
-struct fls_list
-{
+struct fls_list{
+
     long index;
     struct list_head list;
 };
 
 struct fiber_node{
+
     struct fiber_struct data;
     struct hlist_node list;
 };
 
 struct process_node{
+
     int pid;
     long index;
     struct proc_dir_entry* proc_folder;
@@ -75,6 +77,7 @@ struct process_node{
 };
 
 struct thread_node{
+
     int pid;
     int tid;
     long active_fiber_index; 
@@ -82,16 +85,19 @@ struct thread_node{
 };
 
 struct fiber_hash{
+
     spinlock_t ft_lock;
     DECLARE_HASHTABLE(fiber_table, FIBER_BKT);
 };
 
 struct process_hash{
+
     spinlock_t pt_lock;
     DECLARE_HASHTABLE(process_table, PROCESS_BKT);
 };
 
 struct thread_hash{
+
     spinlock_t tt_lock;
     DECLARE_HASHTABLE(thread_table, THREAD_BKT);
 };
@@ -102,17 +108,17 @@ inline struct fiber_struct* get_fiber_pid(int pid,long index);
 inline long get_new_index(void);
 inline long current_fiber(void);
 inline long add_fiber(struct fiber_struct* f);
-inline int add_thread(int tid,long active_fiber_index);
 inline void set_thread(int tid,long active_fiber_index);
+inline int add_thread(int tid,long active_fiber_index);
 inline int is_a_fiber(void);
 inline int process_has_fibers(int pid);
 inline int number_of_fibers(int pid);
 extern int register_exit_handler(void);
 extern int unregister_exit_handler(void);
-int null_handler(void);
-int exit_handler(void);
 extern void init_hashtables(void);
 extern void remove_fiber(long index);
 extern void free_all_tables(void);
+int null_handler(void);
+int exit_handler(void);
 
 #endif

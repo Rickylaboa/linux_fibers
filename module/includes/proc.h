@@ -1,4 +1,4 @@
-#ifndef FIBER_PROC_H // Fabio Marra's copyright
+#ifndef FIBER_PROC_H 
 #define FIBER_PROC_H
 
 #include<includes/constant.h>
@@ -11,8 +11,8 @@
 #define PROCFS_MAX_SIZE	1024
 
 
-struct proc_inode
-{
+struct proc_inode{
+
     struct pid *pid;
     unsigned int fd;
     union proc_op op;
@@ -23,8 +23,6 @@ struct proc_inode
     const struct proc_ns_operations *ns_ops;
     struct inode vfs_inode;
 } __randomize_layout;
-
-
 
 
 #define NOD(NAME, MODE, IOP, FOP, OP){\
@@ -46,4 +44,5 @@ struct proc_inode
 		
 void proc_init(void);
 void proc_end(void);
+
 #endif

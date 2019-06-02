@@ -1,8 +1,9 @@
-#ifndef FIBER_METHODS_H // Fabio Marra's copyright
+#ifndef FIBER_METHODS_H 
 #define FIBER_METHODS_H
-#include "fiber_struct.h"
-#include "constant.h"
-#include <includes/proc.h>
+
+#include"fiber_struct.h"
+#include"constant.h"
+#include<includes/proc.h>
 #include<linux/proc_fs.h>
 
 extern long fiber_create(unsigned long ip, unsigned long sp, unsigned long di);
