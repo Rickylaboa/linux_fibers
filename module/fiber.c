@@ -3,7 +3,7 @@
 
 
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Fabio Marra <fab92mar@gmail.com> & Riccardo Valentini <valentiniriccardo05@gmail.com>");
+MODULE_AUTHOR("Fabio Marra <fab92mar@gmail.com> && Riccardo Valentini <valentiniriccardo05@gmail.com>");
 MODULE_DESCRIPTION("Kernel module implementing Windows fibers on Linux");
  
 
@@ -30,6 +30,8 @@ int init_module(void){
   int ret = misc_register(&mdev);
   if(ret != 0){
     printk(KERN_ERR "%s: Error in misc_register() function\n", NAME);
+
+    return -1;
   }
 
   init_hashtables(); 
@@ -122,7 +124,7 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
       return ret;
 
     case IOCTL_FLS_GET:
-      fls = kzalloc(sizeof(struct fls_info),__GFP_HIGH);
+      fls = kzalloc(sizeof(struct fls_info), __GFP_HIGH);
       if(!fls){
         printk(KERN_ERR "%s: Error in kzalloc()\n", NAME);
 
@@ -136,7 +138,7 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
       return 0;
 
     case IOCTL_FLS_SET:
-      fls = kzalloc(sizeof(struct fls_info),__GFP_HIGH);
+      fls = kzalloc(sizeof(struct fls_info), __GFP_HIGH);
       if(!fls){
         printk(KERN_ERR "%s: Error in kzalloc()\n", NAME);
 

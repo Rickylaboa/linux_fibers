@@ -105,19 +105,23 @@ static int fibered_file_open(struct inode *inode, struct file *file){
 
   res = kstrtoul(file->f_path.dentry->d_name.name, 10, &index);
   if(res != 0){
+
     return -1;
   }
   res = kstrtoul(file->f_path.dentry->d_parent->d_parent->d_name.name, 10, &pid);
   if(res != 0){
+
     return -1;
   }
   fiber = get_fiber_pid(pid, index);
   if(!fiber) printk("Null pointer\n");
   res = single_open(file, show_fiber_file, fiber);
+
   return res;
 }
 
 static struct file_operations f_proc_ops = {
+
     .owner = THIS_MODULE,
     .open = fibered_file_open,
     .read = seq_read,
@@ -144,8 +148,10 @@ static struct dentry *proc_pident_instantiate(struct dentry *dentry,
 	struct proc_inode *ei;
 
 	inode = proc_pid_make_inode(dentry->d_sb, task, p->mode);
-	if (!inode)
+	if (!inode){
+
 		return ERR_PTR(-ENOENT);
+  }
 
 	ei = PROC_I(inode);
 	if (S_ISDIR(inode->i_mode))
@@ -164,6 +170,7 @@ static struct dentry *proc_pident_instantiate(struct dentry *dentry,
 /* Function that allows to read into the directory /proc/[pid]/fibers, 
   allowing to show correctly all the fibers of the process, if present.*/
 static int fibers_folder_readdir(struct file *file, struct dir_context *ctx) {
+
   char buf[64];
   int res, size;
   int i = 0;
@@ -171,18 +178,18 @@ static int fibers_folder_readdir(struct file *file, struct dir_context *ctx) {
   char *name;
   struct pid_entry *entries;
 
-
   long unsigned int pid;
   pid_s = file->f_path.dentry->d_parent->d_iname;
 
-
   res = kstrtoul(pid_s, 10, &pid);
   if(res != 0){
+
     return 0;
   }
   size = number_of_fibers(pid);
   entries = kzalloc(size*sizeof(struct pid_entry), GFP_KERNEL);
   if(!entries){
+
     return 0;
   }
 
@@ -210,7 +217,8 @@ static int fibers_folder_readdir(struct file *file, struct dir_context *ctx) {
 
 /*  Function allowing the lookup into /proc/[pid]/fibers directory,
     if present. */
-static struct dentry *fibers_folder_lookup(struct inode *dir, struct dentry *dentry, unsigned int flags){    
+static struct dentry *fibers_folder_lookup(struct inode *dir, struct dentry *dentry, unsigned int flags){  
+
   struct dentry *ret;
   char buf[64];
   char *pid_s;
@@ -222,20 +230,20 @@ static struct dentry *fibers_folder_lookup(struct inode *dir, struct dentry *den
   char *name;
   struct pid_entry *entries;
 
-
   actual_d = container_of(dir->i_dentry.first, struct dentry, d_u.d_alias);
   parent_d = actual_d-> d_parent;
   pid_s = parent_d-> d_iname; 
 
-
   res = kstrtoul(pid_s, 10, &pid);
   if(res != 0){
+
     return NULL;
   }
   
   size = number_of_fibers(pid);
   entries = kzalloc(size*sizeof(struct pid_entry), GFP_KERNEL);
   if(!entries){
+
     return NULL;
   }
 
@@ -280,8 +288,8 @@ static const struct pid_entry fiber_base_stuff[] = {
 
 /* Function allowing the reading of the /proc/[pid] directory, replacing
   proc_tgid_base_readdir, in order to show also the /fibers folder if present.*/
-static int f_proc_tgid_base_readdir(struct file *file, struct dir_context *ctx)
-{
+static int f_proc_tgid_base_readdir(struct file *file, struct dir_context *ctx){
+
   struct inode *dir;
   struct task_struct *task;
   int pid, num_fibers;
@@ -303,14 +311,15 @@ static int f_proc_tgid_base_readdir(struct file *file, struct dir_context *ctx)
 
 /* Function allowing the lookup of the /proc/[pid]/fibers directory, replacing the generic
   proc_pident_lookup into our specific lookup of the /proc/pid. */
-static struct dentry *f_proc_pident_lookup(struct inode *dir, struct dentry *dentry, const struct pid_entry *p)
-{
+static struct dentry *f_proc_pident_lookup(struct inode *dir, struct dentry *dentry, const struct pid_entry *p){
+
 	struct task_struct *task = get_proc_task(dir);
 	struct dentry *res = ERR_PTR(-ENOENT);
   int pid;
   int num_fibers;
 
 	if (!task){
+
      return res;
   }
   pid = task->tgid;
@@ -321,23 +330,24 @@ static struct dentry *f_proc_pident_lookup(struct inode *dir, struct dentry *den
 		}
   }
 	put_task_struct(task);
+
 	return res;
 }
 
 /* Function replacing proc_lookup in order to allow a correct lookup into
   the /proc/[pid]/fibers folder. */
-static struct dentry *f_proc_lookup(struct inode *dir, struct dentry *dentry, unsigned int flags)
-{
+static struct dentry *f_proc_lookup(struct inode *dir, struct dentry *dentry, unsigned int flags){
+
   struct dentry *res;
   res = proc_tgid_base_lookup(dir, dentry, flags);
   if(res != ERR_PTR(-ENOENT)){
+
     return res;
   }
   res = f_proc_pident_lookup(dir, dentry, fiber_base_stuff);
 
   return res;
 }
-
 
 
 void proc_init(){
@@ -369,6 +379,7 @@ void proc_init(){
 }
 
 void proc_end(){
+
   unprotect();
   proc_tgid_base_inode_operations->lookup = proc_tgid_base_lookup;
   proc_tgid_base_operations->iterate_shared = proc_tgid_base_readdir;

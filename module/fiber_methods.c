@@ -46,6 +46,7 @@ extern long fiber_convert(void){
     context, both via memcpy. Before returning, it sets the new active fiber for the 
     current thread. */
 extern long fiber_switch(long index){
+    
     bool next_status;
     struct pt_regs *regs;
     struct fiber_struct *curr_fiber;

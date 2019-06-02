@@ -27,13 +27,17 @@ inline int is_a_fiber(void){
     key = current->pid;
 	spin_lock_irqsave(&(tt.tt_lock), flags); // begin of critical section
     hash_for_each_possible(tt.thread_table, curr, list, key){
-        if(curr == NULL) break;
+        if(curr == NULL){
+            break;
+        }
         if(curr->tid == key){
             spin_unlock_irqrestore(&(tt.tt_lock), flags); // begin of critical section
+
             return 1;
         }
     }
     spin_unlock_irqrestore(&(tt.tt_lock), flags); // begin of critical section
+
     return 0;
 }
 
@@ -51,6 +55,7 @@ inline long current_fiber(void){
         if(curr->tid == key){
             long active_fiber_index = curr->active_fiber_index;
             spin_unlock_irqrestore(&(tt.tt_lock), flags); // begin of critical section
+
             return active_fiber_index;
         }
     }
@@ -102,7 +107,9 @@ inline long get_new_index(void){
 
 	spin_lock_irqsave(&(pt.pt_lock), flags); // begin of critical section
     hash_for_each_possible(pt.process_table, curr, list, key){
-        if(curr == NULL) break;
+        if(curr == NULL){
+            break;
+        }
         if(curr->pid == key){
             
             if(curr->index >= fiber_limit) // check limit of fibers reached!
@@ -110,11 +117,13 @@ inline long get_new_index(void){
                 fresh_index = -1;
                 spin_unlock_irqrestore(&(pt.pt_lock), flags);
                 printk(KERN_ERR "%s: critical error, MAX_FIBERS reached: %d!\n", NAME, fiber_limit);
+
                 return fresh_index;
             }
             curr->index = curr->index + 1;
             fresh_index = curr->index;
             spin_unlock_irqrestore(&(pt.pt_lock), flags); // end of critical section
+
             return fresh_index;
         }
     }
@@ -124,6 +133,7 @@ inline long get_new_index(void){
     if(unlikely(!elem)){
         printk(KERN_ERR "%s: error in kzalloc()\n", NAME);
         spin_unlock_irqrestore(&(pt.pt_lock), flags); // end of critical section
+
         return -1;
     }
     elem->pid = key;
@@ -146,12 +156,14 @@ extern struct fiber_struct *init_fiber(int status, int pid, int thread_running, 
     new_fiber =  kzalloc(sizeof(struct fiber_struct), __GFP_HIGH);
     if(unlikely(!new_fiber)){
         printk(KERN_ERR "%s: error in kzalloc\n", NAME);
+
         return NULL;   
     }
 
     new_fls_list  =  kzalloc(sizeof(struct fls_list), __GFP_HIGH);
     if(unlikely(!new_fls_list)){
         printk(KERN_ERR "%s: error in kzalloc\n", NAME);
+
         return NULL;   
     }
     ip = regs.ip;
@@ -183,6 +195,7 @@ inline long add_fiber(struct fiber_struct *f){
     struct fiber_node *elem = kzalloc(sizeof(struct fiber_node), __GFP_HIGH);
     if(unlikely(!elem)){
         printk(KERN_INFO "%s: error in kzalloc()\n", NAME);
+
         return -1;
     }
     elem->data = *f;
@@ -203,6 +216,7 @@ inline int add_thread(int tid, long active_fiber_index){
     struct thread_node* elem = kzalloc(sizeof(struct fiber_node), __GFP_HIGH);
     if(unlikely(!elem)){
         printk(KERN_ERR "%s: error in kzalloc()\n", NAME);
+
         return -1;
     }
     elem->pid = current->parent->pid;
@@ -248,10 +262,11 @@ inline struct fiber_struct *get_fiber(long index){
     unsigned long flags;
 
     key = (long long) ((long long) current->parent->pid << MAX_FIBERS) + index; 
-    spin_lock_irqsave(&(ft.ft_lock), flags); // begin of critical section
+    spin_lock_irqsave(&(ft.ft_lock), flags);                     // begin of critical section
     hash_for_each_possible(ft.fiber_table, curr, list, key){
         if(curr->data.index == index && curr->data.pid == current->parent->pid){
-            spin_unlock_irqrestore(&(ft.ft_lock), flags); // end of critical section
+            spin_unlock_irqrestore(&(ft.ft_lock), flags);        // end of critical section
+
             return &curr->data;
         }
     }
@@ -270,10 +285,11 @@ inline struct fiber_struct *get_fiber_pid(int pid, long index){
 
     key = (long long) ((long long) pid << MAX_FIBERS) + index; 
 
-    spin_lock_irqsave(&(ft.ft_lock), flags); // begin of critical section
+    spin_lock_irqsave(&(ft.ft_lock), flags);                     // begin of critical section
     hash_for_each_possible(ft.fiber_table, curr, list, key){
         if(curr->data.index == index && curr->data.pid == pid){
-            spin_unlock_irqrestore(&(ft.ft_lock), flags); // end of critical section
+            spin_unlock_irqrestore(&(ft.ft_lock), flags);        // end of critical section
+
             return &curr->data;
         }
     }
@@ -293,6 +309,7 @@ extern int register_exit_handler(void){
     ret = register_kprobe(&exit_prober);
     if(unlikely(ret < 0)){
         printk(KERN_ERR "process-probe: error in registering probe");
+        
         return -1;
     }
 
