@@ -25,24 +25,24 @@
   */
 
 static unsigned long cr0;
-static struct pid_entry* tgid_base_stuff;
+static struct pid_entry *tgid_base_stuff;
 static int (*proc_link)(struct dentry *, struct path *);
-static int (*_proc_tgid_base_readdir)(struct file*, struct dir_context*);
-static int (*proc_tgid_base_readdir)(struct file*, struct dir_context*);
-static struct dentry* (*proc_tgid_base_lookup)(struct inode*, struct dentry*, unsigned int);
-static int (*proc_pident_readdir)(struct file*, struct dir_context*, const struct pid_entry*, unsigned int);
+static int (*_proc_tgid_base_readdir)(struct file *, struct dir_context *);
+static int (*proc_tgid_base_readdir)(struct file *, struct dir_context *);
+static struct dentry* (*proc_tgid_base_lookup)(struct inode *, struct dentry *, unsigned int);
+static int (*proc_pident_readdir)(struct file *, struct dir_context *, const struct pid_entry *, unsigned int);
 static struct dentry* (*proc_pident_lookup)(struct inode*, struct dentry*, const struct pid_entry*, unsigned int);
-//static struct dentry* (*proc_pident_instantiate)(struct inode *dir, struct dentry *dentry,struct task_struct *task, const void *ptr);
-struct inode* (*proc_pid_make_inode)(struct super_block * sb, struct task_struct *task, umode_t mode);
-int* (*pid_revalidate)(struct dentry *dentry, unsigned int flags);
-void* (*task_dump_owner)(struct task_struct *task, umode_t mode, kuid_t *ruid, kgid_t *rgid);
-void* (*security_task_to_inode)(struct task_struct *p, struct inode *inode);
+//static struct dentry *(*proc_pident_instantiate)(struct inode *dir, struct dentry *dentry, struct task_struct *task, const void *ptr);
+struct inode *(*proc_pid_make_inode)(struct super_block *sb, struct task_struct *task, umode_t mode);
+int *(*pid_revalidate)(struct dentry *dentry, unsigned int flags);
+void *(*task_dump_owner)(struct task_struct *task, umode_t mode, kuid_t *ruid, kgid_t *rgid);
+void *(*security_task_to_inode)(struct task_struct *p, struct inode *inode);
 
 
-static struct file_operations* proc_tgid_base_operations;
-static struct inode_operations* proc_tgid_base_inode_operations;
+static struct file_operations *proc_tgid_base_operations;
+static struct inode_operations *proc_tgid_base_inode_operations;
 static struct inode_operations proc_pid_link_inode_operations;
-static struct dentry_operations* pid_dentry_operations;
+static struct dentry_operations *pid_dentry_operations;
 static const struct inode_operations f_proc_iops;
 
 
@@ -74,11 +74,11 @@ static inline struct task_struct *get_proc_task(const struct inode *inode)
 
 /*  Function used as a parser to read the specific sequential
     file of a single fiber within a process.*/
-static int show_fiber_file(struct seq_file* file, void* f){
+static int show_fiber_file(struct seq_file *file, void *f){
   struct fiber_struct *fiber;
   long index;
 
-  fiber = (struct fiber_struct*) file->private;
+  fiber = (struct fiber_struct *) file->private;
   index = fiber->index;
   seq_printf(file, "%s %ld\n", "Fiber", index); 
   if(fiber->status == ACTIVE_FIBER){
@@ -90,7 +90,8 @@ static int show_fiber_file(struct seq_file* file, void* f){
   seq_printf(file, "%s: %d\n", "Creator Thread ID", fiber->thread_created); 
   seq_printf(file, "%s: %ld\n", "Current Activations", fiber->current_activations); 
   seq_printf(file, "%s: %d\n", "Failed Activations", atomic_read(&(fiber->failed_activations))); 
-  seq_printf(file, "%s: %ld usec\n", "Total Execution Time",fiber->total_time); 
+  seq_printf(file, "%s: %ld usec\n", "Total Execution Time", fiber->total_time); 
+  
   return 0;
 }
 
