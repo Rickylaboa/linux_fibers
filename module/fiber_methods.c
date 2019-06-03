@@ -59,7 +59,6 @@ extern long fiber_switch(long index){
     long current_index;
     current_index = current_fiber();
     regs = task_pt_regs(current);
-    printk(KERN_INFO "%s: %ld\n", NAME, regs->ip);
     if(unlikely(current_index == index)){
         
         return -1;

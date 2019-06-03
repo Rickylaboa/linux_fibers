@@ -6,7 +6,6 @@ static struct thread_hash tt;
 static struct kprobe exit_prober;
 
 
-
 /*  This function initializes the three hashtables needed
     to store the correct informations about fibers and their
     relationships with processes, threads and their own ids.*/
@@ -27,9 +26,7 @@ inline int is_a_fiber(void){
     key = current->pid;
 	spin_lock_irqsave(&(tt.tt_lock), flags); // begin of critical section
     hash_for_each_possible(tt.thread_table, curr, list, key){
-        if(curr == NULL){
-            break;
-        }
+
         if(curr->tid == key){
             spin_unlock_irqrestore(&(tt.tt_lock), flags); // begin of critical section
 
@@ -107,9 +104,7 @@ inline long get_new_index(void){
 
 	spin_lock_irqsave(&(pt.pt_lock), flags); // begin of critical section
     hash_for_each_possible(pt.process_table, curr, list, key){
-        if(curr == NULL){
-            break;
-        }
+
         if(curr->pid == key){
             
             if(curr->index >= fiber_limit) // check limit of fibers reached!

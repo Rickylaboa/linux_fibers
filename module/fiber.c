@@ -77,7 +77,7 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
 
 		case IOCTL_CREATE: // Userspace requires to create a new fiber
       nfib = (struct fiber_info*) kzalloc(sizeof(struct fiber_info), __GFP_HIGH);
-      if(nfib==NULL){
+      if(unlikely(!nfib)){
         printk(KERN_ERR "%s: error in kzalloc()\n", NAME);
 
         return -1;
@@ -92,7 +92,7 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
 		
     case IOCTL_SWITCH: // Userspace requires to switch from fiber x to fiber y
       index = kzalloc(sizeof(long), __GFP_HIGH);
-      if(!index){
+      if(unlikely(!index)){
         printk(KERN_ERR "%s: Error in kzalloc()\n", NAME);
 
         return -1;
@@ -112,7 +112,7 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
 
     case IOCTL_FLS_FREE: // Userspace requires to switch from fiber x to fiber y
       index = kzalloc(sizeof(long), __GFP_HIGH);
-      if(!index){
+      if(unlikely(!index)){
         //printk(KERN_ERR "%s: Error in kzalloc()\n", NAME);
         return -1;
       }
@@ -125,7 +125,7 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
 
     case IOCTL_FLS_GET:
       fls = kzalloc(sizeof(struct fls_info), __GFP_HIGH);
-      if(!fls){
+      if(unlikely(!fls)){
         printk(KERN_ERR "%s: Error in kzalloc()\n", NAME);
 
         return -1;
@@ -139,7 +139,7 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
 
     case IOCTL_FLS_SET:
       fls = kzalloc(sizeof(struct fls_info), __GFP_HIGH);
-      if(!fls){
+      if(unlikely(!fls)){
         printk(KERN_ERR "%s: Error in kzalloc()\n", NAME);
 
         return -1;

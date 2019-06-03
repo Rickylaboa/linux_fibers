@@ -104,17 +104,19 @@ static int fibered_file_open(struct inode *inode, struct file *file){
   struct fiber_struct *fiber;
 
   res = kstrtoul(file->f_path.dentry->d_name.name, 10, &index);
-  if(res != 0){
+  if(unlikely(res != 0)){
 
     return -1;
   }
   res = kstrtoul(file->f_path.dentry->d_parent->d_parent->d_name.name, 10, &pid);
-  if(res != 0){
+  if(unlikely(res != 0)){
 
     return -1;
   }
   fiber = get_fiber_pid(pid, index);
-  if(!fiber) printk("Null pointer\n");
+  if(!fiber){
+    printk("Null pointer\n");
+  }
   res = single_open(file, show_fiber_file, fiber);
 
   return res;
@@ -188,7 +190,8 @@ static int fibers_folder_readdir(struct file *file, struct dir_context *ctx) {
   }
   size = number_of_fibers(pid);
   entries = kzalloc(size*sizeof(struct pid_entry), GFP_KERNEL);
-  if(!entries){
+  if(unlikely(!entries)){
+    printk(KERN_ERR "Error in kzalloc() function\n", NAME);
 
     return 0;
   }
@@ -197,7 +200,12 @@ static int fibers_folder_readdir(struct file *file, struct dir_context *ctx) {
   {  
     res = snprintf(buf, 64, "%d", i);
     name = kmalloc(res + 1, GFP_KERNEL);
-    memcpy(name, buf, res+1);
+    if(unlikely(!name)){
+      printk(KERN_ERR "Error in kmalloc() function\n", NAME);
+
+      return 0;
+    }
+    memcpy(name, buf, res + 1);
     entries[i].name = name;
     entries[i].len = res;
     entries[i].mode = S_IFREG | S_IRUGO | S_IWUGO;
@@ -251,7 +259,12 @@ static struct dentry *fibers_folder_lookup(struct inode *dir, struct dentry *den
   {           
     res = snprintf(buf, 64, "%d", i);
     name = kmalloc(res + 1, GFP_KERNEL);
-    memcpy(name, buf, res+1);
+    if(unlikely(!name)){
+      printk(KERN_ERR "Error in kmalloc() function\n", NAME);
+
+      return NULL;
+    }
+    memcpy(name, buf, res + 1);
     entries[i].name = name;
     entries[i].len = res;
     entries[i].mode = S_IFREG | S_IRUGO | S_IWUGO;
