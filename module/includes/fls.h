@@ -8,9 +8,9 @@
 
 
 struct fls_data{
-    long index;
-    void* value;
-    struct hlist_node list;
+    long index; // the index of the fiber local storage data
+    void* value; // the pointer to the data
+    struct hlist_node list; // the next element
 };
 
 long fls_alloc(void);
