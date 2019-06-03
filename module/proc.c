@@ -191,7 +191,7 @@ static int fibers_folder_readdir(struct file *file, struct dir_context *ctx) {
   size = number_of_fibers(pid);
   entries = kzalloc(size*sizeof(struct pid_entry), GFP_KERNEL);
   if(unlikely(!entries)){
-    printk(KERN_ERR "Error in kzalloc() function\n", NAME);
+    printk(KERN_ERR "%s: Error in kzalloc() function\n", NAME);
 
     return 0;
   }
@@ -201,7 +201,7 @@ static int fibers_folder_readdir(struct file *file, struct dir_context *ctx) {
     res = snprintf(buf, 64, "%d", i);
     name = kmalloc(res + 1, GFP_KERNEL);
     if(unlikely(!name)){
-      printk(KERN_ERR "Error in kmalloc() function\n", NAME);
+      printk(KERN_ERR "%s: Error in kmalloc() function\n", NAME);
 
       return 0;
     }
@@ -260,7 +260,7 @@ static struct dentry *fibers_folder_lookup(struct inode *dir, struct dentry *den
     res = snprintf(buf, 64, "%d", i);
     name = kmalloc(res + 1, GFP_KERNEL);
     if(unlikely(!name)){
-      printk(KERN_ERR "Error in kmalloc() function\n", NAME);
+      printk(KERN_ERR "%s: Error in kmalloc() function\n", NAME);
 
       return NULL;
     }
