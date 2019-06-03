@@ -77,14 +77,14 @@ extern long fiber_switch(long index){
 
         return -1;    
     }
-    next_status = test_and_set_bit(0, &(next_fiber->status));
+    next_status = test_and_set_bit(INACTIVE_FIBER, &(next_fiber->status));
     if(next_status == ACTIVE_FIBER){
         atomic_inc(&(next_fiber->failed_activations));
 
         return -1;
     }
     // I'm sure that only one thread will reach this point, so no need for spinlocks
-    test_and_clear_bit(0, &(curr_fiber->status));
+    test_and_clear_bit(INACTIVE_FIBER, &(curr_fiber->status));
 
     actual_time = ktime_get();
     slice = ktime_sub(actual_time, curr_fiber->start_time);

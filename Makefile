@@ -12,9 +12,9 @@ all:
 
 clean:
 	sudo make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
-	make -C benchmark/ clean
-	sudo rm -f usertest_1.o 
-	sudo rm -f usertest_2.o
+	sudo rm benchmark/test
+	sudo rm usertest_1
+	sudo rm usertest_2
 	sudo dmesg -C
 
 remove:
