@@ -8,8 +8,8 @@
   - proc_fill_cache: > fills (IF POSSIBLE) a directory entry, putting into /proc/[pid] one 
                       subfolder or one file; (TO LOOKUP)
                       
-  - proc_pident_readdir: > fills all the pid_entry of some /proc/[pid], passed via
-                          proc_fill_cache, incrementing the unique number identifing 
+  - proc_pident_readdir: > fills all the pid_entry of some /proc/[pid], calling
+                            proc_fill_cache, incrementing the unique number identifing 
                           each single subfolder or file. 
 
   - proc_tgid_base_readdir: > calls proc_pident_readdir to pass all
@@ -75,6 +75,7 @@ static inline struct task_struct *get_proc_task(const struct inode *inode)
 /*  Function used as a parser to read the specific sequential
     file of a single fiber within a process.*/
 static int show_fiber_file(struct seq_file *file, void *f){
+
   struct fiber_struct *fiber;
   long index;
 
@@ -91,7 +92,7 @@ static int show_fiber_file(struct seq_file *file, void *f){
   seq_printf(file, "%s: %ld\n", "Current Activations", fiber->current_activations); 
   seq_printf(file, "%s: %d\n", "Failed Activations", atomic_read(&(fiber->failed_activations))); 
   seq_printf(file, "%s: %ld usec\n", "Total Execution Time", fiber->total_time); 
-  
+
   return 0;
 }
 
@@ -100,6 +101,7 @@ static int show_fiber_file(struct seq_file *file, void *f){
     in order to attach the fiber_struct to the field "private"
     of the file and to allow any subsequent reading. */
 static int fibered_file_open(struct inode *inode, struct file *file){
+
   int res;
   unsigned long pid, index;
   struct fiber_struct *fiber;
