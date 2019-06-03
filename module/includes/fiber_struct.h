@@ -48,7 +48,6 @@ struct fiber_struct{
     long index;
     long max_fls_index;
     unsigned long entry_point;
-    spinlock_t info_lock;
     unsigned long total_time;
     struct fls_list* free_fls_indexes;
     DECLARE_HASHTABLE(fls_table, 5);
