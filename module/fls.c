@@ -10,7 +10,7 @@ static unsigned long fl;
     fls index is returned to userspace. */
 long fls_alloc(void){
 
-    struct fiber_struct* f = get_fiber(current_fiber());
+    struct fiber_struct *f = get_fiber(current_fiber());
     struct fls_list *first;
     struct fls_data *data;
     long index; 
@@ -20,13 +20,14 @@ long fls_alloc(void){
     //printk(KERN_INFO "%s: Allocating new index (fib %ld)\n", NAME, f->index); 
     if(unlikely(f->max_fls_index >= MAX_INDEX)){
         printk(KERN_ERR "%s: critical error, max fls reached", NAME);
+
         return -1;
     }
 
     data = kzalloc(sizeof(struct fls_data), __GFP_HIGH);
     if(unlikely(!data)){
         printk(KERN_ERR "%s: Error in kzalloc()\n", NAME);
-        spin_unlock_irqrestore(&(fls_lock), fl);//end of cs
+        spin_unlock_irqrestore(&(fls_lock), fl);              //end of critical section
 
         return -1;
     }
@@ -42,7 +43,7 @@ long fls_alloc(void){
     data->value = 0; 
     hash_add(f->fls_table, &(data->list), index);
 
-    spin_unlock_irqrestore(&(fls_lock),fl);//end of cs
+    spin_unlock_irqrestore(&(fls_lock),fl);                   //end of critical section
 
     return index;
 }
@@ -52,11 +53,11 @@ long fls_alloc(void){
     in case of success. */
 int fls_free(long index){
 
-    struct fiber_struct* f = get_fiber(current_fiber());
+    struct fiber_struct *f = get_fiber(current_fiber());
     struct fls_list *first;
     struct fls_data *data;
 
-    spin_lock_irqsave(&(fls_lock), fl); // begin of allfibers cs
+    spin_lock_irqsave(&(fls_lock), fl);                   // begin of allfibers critical section
     if(f->max_fls_index == index){
         (f->max_fls_index)--;
     }
@@ -64,7 +65,7 @@ int fls_free(long index){
         first = kzalloc(sizeof(struct fls_list), __GFP_HIGH);
         if(unlikely(!first)){
             printk(KERN_ERR "%s: Error in kzalloc()\n", NAME);
-            spin_unlock_irqrestore(&(fls_lock),fl);//end of cs
+            spin_unlock_irqrestore(&(fls_lock),fl);         //end of critical section
 
             return -1;
         }
@@ -86,18 +87,18 @@ int fls_free(long index){
     in the corresponding hash table. */
 void *fls_get_value(long index){
 
-    struct fiber_struct* f = get_fiber(current_fiber());
+    struct fiber_struct *f = get_fiber(current_fiber());
     struct fls_data *data;
     
-    spin_lock_irqsave(&(fls_lock), fl); // begin of allfibers cs
+    spin_lock_irqsave(&(fls_lock), fl);              // begin of all fibers critical section
     hash_for_each_possible(f->fls_table, data, list, index){
         if(data->index == index){
-            spin_unlock_irqrestore(&(fls_lock),fl);//end of cs
+            spin_unlock_irqrestore(&(fls_lock),fl);   //end of critical section
 
             return data->value;
         }
     }
-    spin_unlock_irqrestore(&(fls_lock),fl);//end of cs
+    spin_unlock_irqrestore(&(fls_lock),fl);         //end of critical section
 
     return NULL;
 }
@@ -110,11 +111,11 @@ void fls_set_value(long index, void *value){
     struct fiber_struct *f = get_fiber(current_fiber());
     struct fls_data *data;
 
-    spin_lock_irqsave(&(fls_lock), fl); // begin of allfibers cs
+    spin_lock_irqsave(&(fls_lock), fl);                // begin of allfibers critical section
     hash_for_each_possible(f->fls_table, data, list, index){
         if(data->index == index){
             data->value = value;
         }
     }
-    spin_unlock_irqrestore(&(fls_lock), fl);//end of cs
+    spin_unlock_irqrestore(&(fls_lock), fl);          //end of critical section
 }
