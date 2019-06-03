@@ -38,67 +38,66 @@
 
 struct fiber_struct{
 
-    int pid;
+    int pid; //  process id in which the fiber is living
     int thread_created; // thread id from which the fiber was created
-    int thread_running;
-    unsigned long status;
-    unsigned long current_activations;
-    atomic_t failed_activations;
-    ktime_t start_time;
-    long index;
-    long max_fls_index;
-    unsigned long entry_point;
-    unsigned long total_time;
-    struct fls_list* free_fls_indexes;
-    DECLARE_HASHTABLE(fls_table, 5);
-    struct pt_regs registers;
-    struct fpu fpu_registers;
+    int thread_running; // thread id in which the fiber is running
+    unsigned long status; // ACTIVE_FIBER (1) or INACTIVE_FIBER (0), running or not
+    unsigned long current_activations; // number of successful activations
+    unsigned long entry_point; // entry point address of the fiber (function to execute)
+    unsigned long total_time; // total time in which the fiber has run
+    atomic_t failed_activations; // number of failed activations
+    ktime_t start_time; // variable used to compute the total time
+    long index; // the fiber index, unique within the process id
+    long max_fls_index; // the max id the fiber local storage reached
+    struct fls_list* free_fls_indexes; // the list of free fiber local storage indexes
+    DECLARE_HASHTABLE(fls_table, 5); // the fiber local storage hashtable
+    struct pt_regs registers; // CPU context of the fiber
+    struct fpu fpu_registers; // FPU context of the fiber
 };
 
 struct fls_list{
 
-    long index;
-    struct list_head list;
+    long index; // index of the fls element 
+    struct list_head list;  // next element
 };
 
 struct fiber_node{
 
-    struct fiber_struct data;
-    struct hlist_node list;
+    struct fiber_struct data; // the fiber
+    struct hlist_node list; // the next in the bucket
 };
 
 struct process_node{
 
-    int pid;
-    long index;
-    struct proc_dir_entry* proc_folder;
-    struct hlist_node list;
+    int pid; // the pid of the process 
+    long index; // the actual index to release in case of new fiber allocation
+    struct hlist_node list; // next process in the bucket
 };
 
 struct thread_node{
 
-    int pid;
-    int tid;
-    long active_fiber_index; 
-    struct hlist_node list;
+    int pid; // the process id in which the thread is running
+    int tid; // the pid of the thread
+    long active_fiber_index; // the fiber run by the thread
+    struct hlist_node list; // next thread in the bucket
 };
 
 struct fiber_hash{
 
-    spinlock_t ft_lock;
-    DECLARE_HASHTABLE(fiber_table, FIBER_BKT);
+    spinlock_t ft_lock; // fibers hashtable spinlock
+    DECLARE_HASHTABLE(fiber_table, FIBER_BKT); // fibers hashtable
 };
 
 struct process_hash{
 
-    spinlock_t pt_lock;
-    DECLARE_HASHTABLE(process_table, PROCESS_BKT);
+    spinlock_t pt_lock; // processes hashtable spinlock 
+    DECLARE_HASHTABLE(process_table, PROCESS_BKT); // processes hashtable
 };
 
 struct thread_hash{
 
-    spinlock_t tt_lock;
-    DECLARE_HASHTABLE(thread_table, THREAD_BKT);
+    spinlock_t tt_lock; // threads hashtable spinlock
+    DECLARE_HASHTABLE(thread_table, THREAD_BKT); // threads hashtable
 };
 
 extern struct fiber_struct* init_fiber(int status,int pid, int thread_running,long index,struct pt_regs regs);
