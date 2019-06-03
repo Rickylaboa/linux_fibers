@@ -7,7 +7,7 @@
 #include<sys/types.h>
 #include<sys/ioctl.h>    
 #include<semaphore.h>  
-#include"constant.h"
+#include"fiber_constant.h"
 
 
 static int fd = -1;

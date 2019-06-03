@@ -4,6 +4,13 @@ obj-m += fiber.o
 fiber-objs := module/fiber.o module/fiber_struct.o module/fiber_methods.o module/fls.o module/debug.o module/proc.o
 i=1
 
+lib:
+	sudo cp libs/fiber_constant.h /usr/include
+	sudo cp libs/userfibers.h /usr/include
+	sudo chmod 755 /usr/include/fiber_constant.h
+	sudo chmod 755 /usr/include/userfibers.h
+
+
 all:
 	sudo make -Wno-missing-braces    -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
 	gcc -O2 -Wno-attributes -pthread -o usertest_1 user/usertest_1.c
