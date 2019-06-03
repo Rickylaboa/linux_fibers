@@ -16,12 +16,13 @@
 
 
 struct fiber_mem_node{
-  void* stack;
+
+  void *stack;
   int stack_size;
-  struct fiber_mem_node* next; 
+  struct fiber_mem_node *next; 
 };
 
-struct fiber_info {        //useful info to create a fiber
+struct fiber_info{        //useful info to create a fiber
 
   void *stack;
   void (*routine) (void *);
@@ -29,11 +30,7 @@ struct fiber_info {        //useful info to create a fiber
 };
 
 struct fls_info{
+
   long index;
-  void* value;
+  void *value;
 };
-
-
-// fls to do...
-
-

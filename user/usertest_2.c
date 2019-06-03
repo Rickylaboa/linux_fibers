@@ -89,7 +89,6 @@ int main()
 {
     int num_fibers, num_threads;
     long i,ret = 0;
-    printf("System is %ld bits\n", system_architecture());
     mainfiber = convert_thread_to_fiber();
     printf("[Main fiber begins..]\n");
     for(i = 0; i < NUM_FIBERS; i++)
