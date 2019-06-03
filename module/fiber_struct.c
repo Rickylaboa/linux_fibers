@@ -242,7 +242,7 @@ inline void set_thread(int tid, long active_fiber_index){
     key = current->pid;
     selected = NULL; 
 	spin_lock_irqsave(&(tt.tt_lock), flags); // begin of critical section
-    hash_for_each_possible_rcu(tt.thread_table, curr, list, key){
+    hash_for_each_possible(tt.thread_table, curr, list, key){
         if(curr->tid == key){
             selected = curr;
             selected->active_fiber_index = active_fiber_index;
