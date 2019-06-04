@@ -97,7 +97,7 @@ inline long get_new_index(void){
     unsigned long flags;
     struct process_node *curr;
     struct process_node *elem;
-    key = current->parent->pid; // the key in pt is the pid
+    key = current->tgid; // the key in pt is the pid
 
     fresh_index = -1;
     fiber_limit = (2<<MAX_FIBERS)-1;
@@ -214,7 +214,7 @@ inline int add_thread(int tid, long active_fiber_index){
 
         return -1;
     }
-    elem->pid = current->parent->pid;
+    elem->pid = current->tgid;
     elem->tid = tid;
     elem->active_fiber_index = active_fiber_index;
     key = tid;
@@ -256,10 +256,10 @@ inline struct fiber_struct *get_fiber(long index){
     struct fiber_node *curr;
     unsigned long flags;
 
-    key = (long long) ((long long) current->parent->pid << MAX_FIBERS) + index; 
+    key = (long long) ((long long) current->tgid << MAX_FIBERS) + index; 
     spin_lock_irqsave(&(ft.ft_lock), flags);                     // begin of critical section
     hash_for_each_possible(ft.fiber_table, curr, list, key){
-        if(curr->data.index == index && curr->data.pid == current->parent->pid){
+        if(curr->data.index == index && curr->data.pid == current->tgid){
             spin_unlock_irqrestore(&(ft.ft_lock), flags);        // end of critical section
 
             return &curr->data;
@@ -359,7 +359,7 @@ int exit_handler(void){
     int bkt2, bkt3, pid, d;
     unsigned long flags;
     int i, j, k, h;
-    pid = current->parent->pid;
+    pid = current->tgid;
     d = 1;
     i = 0;
     j = 0;
