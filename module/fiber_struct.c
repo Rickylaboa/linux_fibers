@@ -205,10 +205,10 @@ inline long add_fiber(struct fiber_struct *f){
 /*  This function adds a thread to the thread hashtable. It uses a spinlock
     to access the table. */
 inline int add_thread(int tid, long active_fiber_index){
-    
+
     int key;
     unsigned long flags;
-    struct thread_node* elem = kzalloc(sizeof(struct fiber_node), __GFP_HIGH);
+    struct thread_node* elem = kzalloc(sizeof(struct thread_node), __GFP_HIGH);
     if(unlikely(!elem)){
         printk(KERN_ERR "%s: error in kzalloc()\n", NAME);
 
