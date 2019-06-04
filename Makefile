@@ -32,34 +32,34 @@ insert:
 
 btest_5:	
 	while true; do \
-    	./benchmark/test 5  ; \
+    	time ./benchmark/test 5  ; \
 	done
 
 btest_50:	
 	while true; do \
-    	./benchmark/test 50  ; \
+    	time ./benchmark/test 50  ; \
 	done
 
 btest_100:	
 	while true; do \
-    	./benchmark/test 100  ; \
+    	time ./benchmark/test 100  ; \
 	done
 
 btest_500:	
 	while true; do \
-    	./benchmark/test 500  ; \
+    	time ./benchmark/test 500  ; \
 	done
 
 btest_1000:	
 	while true; do \
-    	./benchmark/test 1000  ; \
+    	time ./benchmark/test 1000  ; \
 	done
 
 btest:
-	./benchmark/test 5
-	./benchmark/test 10
-	./benchmark/test 100
-	./benchmark/test 1000
+	time ./benchmark/test 5
+	time ./benchmark/test 10
+	time ./benchmark/test 100
+	time ./benchmark/test 1000
 
 test1:
 	./usertest_1

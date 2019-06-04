@@ -367,9 +367,6 @@ int exit_handler(void){
     h = 0;
 
 	spin_lock_irqsave(&(pt.pt_lock), flags); // begin of critical section
-	spin_lock_irqsave(&(tt.tt_lock), flags); // begin of critical section
-	spin_lock_irqsave(&(ft.ft_lock), flags); // begin of critical section
-
     hash_for_each_possible(pt.process_table, curr1, list, pid){
         if(curr1->pid == pid)
         {
@@ -378,9 +375,12 @@ int exit_handler(void){
             i++;
         }
     } 
+	spin_unlock_irqrestore(&(pt.pt_lock), flags); // end of critical section
+
     while(d > 0)
     { 
         d = 0;
+	    spin_lock_irqsave(&(ft.ft_lock), flags); // begin of critical section
         hash_for_each(ft.fiber_table, bkt2, curr2, list){
             if(curr2->data.pid == pid){
                 hash_del(&(curr2->list));
@@ -390,8 +390,10 @@ int exit_handler(void){
                 kfree(curr2);
             }
         }
+        spin_unlock_irqrestore(&(ft.ft_lock), flags); // end of critical section
     }
 
+	spin_lock_irqsave(&(tt.tt_lock), flags); // begin of critical section
     hash_for_each(tt.thread_table, bkt3, curr3, list){
         if(curr3->pid == pid){
             hash_del(&(curr3->list));
@@ -399,9 +401,7 @@ int exit_handler(void){
             k++;
         }
     }
-	spin_unlock_irqrestore(&(ft.ft_lock), flags); // end of critical section
 	spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of critical section
-	spin_unlock_irqrestore(&(pt.pt_lock), flags); // end of critical section
 
     return 0;
 }
