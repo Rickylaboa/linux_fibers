@@ -91,7 +91,7 @@ static int show_fiber_file(struct seq_file *file, void *f){
   seq_printf(file, "%s: %d\n", "Creator Thread ID", fiber->thread_created); 
   seq_printf(file, "%s: %ld\n", "Current Activations", fiber->current_activations); 
   seq_printf(file, "%s: %d\n", "Failed Activations", atomic_read(&(fiber->failed_activations))); 
-  seq_printf(file, "%s: %ld usec\n", "Total Execution Time", fiber->total_time); 
+  seq_printf(file, "%s: %ld nsec\n", "Total Execution Time", fiber->total_time); 
 
   return 0;
 }
