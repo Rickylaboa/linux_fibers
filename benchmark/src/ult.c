@@ -194,7 +194,7 @@ void *ult_creat(size_t stack_size, void (*entry_point)(void *), void *args) {
 	bzero(ctx, sizeof(ult_t));
 
 	ctx->id = __sync_fetch_and_add(&ult_id, 1);
-	printf("Created fiber with id %d\n", ctx->id);
+	//printf("Created fiber with id %d\n", ctx->id);
 	
 	ctx->context = malloc(sizeof(exec_context_t));
 	bzero(ctx->context, sizeof(exec_context_t));
@@ -212,10 +212,10 @@ void ult_switch_to(void *ult) {
 		return;
 	
 	if(completed_fibers > 0)
-		printf("Thread %d switching to fiber %d...", tid, to->id);
+		//printf("Thread %d switching to fiber %d...", tid, to->id);
 	current = to;
 	if(completed_fibers > 0)
-		puts("done.");
+		//puts("done.");
 	
 	context_switch(from, to);
 }

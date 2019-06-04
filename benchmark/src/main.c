@@ -108,7 +108,7 @@ static void main_loop(void *args) {
 	}
 	while(completed_fibers > 0);
 	
-	puts(" COMPLETED ");
+	puts("\nCOMPLETED ");
 	printf("Init: %f ; Work: %f\n", ((double)init_millis / 1000), ((double)exec_millis / 1000 / num_fibers));
 	exit(EXIT_SUCCESS);
 	
@@ -137,7 +137,8 @@ int main(int argc, char **argv) {
 	unsigned int cpus;
 	unsigned int i;
 	timer fiber_initialization;
-	printf("pid is %d\n", getpid());
+	printf("RUNNING %s 's VERSION\n",AUTHOR);
+	printf("PID: %d\n", getpid());
 	// Initialize pseudorandom generator
 	srandom(time(0));
 	
