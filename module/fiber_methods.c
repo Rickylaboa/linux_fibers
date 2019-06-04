@@ -48,14 +48,13 @@ extern long fiber_convert(void){
 extern long fiber_switch(long index){
     
     bool next_status;
+    unsigned long actual_time;
+    unsigned long slice;
     struct pt_regs *regs;
     struct fiber_struct *curr_fiber;
     struct fiber_struct *next_fiber;
     struct fpu *curr_fpu_regs;
     struct fpu *next_fpu_regs;
-    ktime_t actual_time;
-    ktime_t slice;
-    //unsigned long flags;
     long current_index;
     current_index = current_fiber();
     regs = task_pt_regs(current);
@@ -85,9 +84,9 @@ extern long fiber_switch(long index){
     // I'm sure that only one thread will reach this point, so no need for spinlocks
     test_and_clear_bit(INACTIVE_FIBER, &(curr_fiber->status));
 
-    actual_time = ktime_get();
-    slice = ktime_sub(actual_time, curr_fiber->start_time);
-    curr_fiber->total_time = curr_fiber->total_time + (ktime_sub(actual_time, curr_fiber->start_time)/1000);
+    actual_time = current->utime;
+    slice = actual_time -  curr_fiber->start_time;
+    curr_fiber->total_time += slice;
     next_fiber->start_time = actual_time;
 
     curr_fiber->registers = *regs;
@@ -113,10 +112,8 @@ extern long fiber_switch(long index){
 extern long fiber_alloc(int status, struct pt_regs regs){
 
     struct fiber_struct *new_fiber;
-    ktime_t temp;
     long fiber_index = get_new_index();
 
-    temp = ktime_get();
     if(unlikely(fiber_index < 0)){
         printk(KERN_ERR "%s: impossible to get a new index\n", NAME);
 
@@ -127,12 +124,12 @@ extern long fiber_alloc(int status, struct pt_regs regs){
         preempt_disable();
         fpu__initialize(&(new_fiber->fpu_registers));
         preempt_enable();
-        new_fiber->start_time = ktime_sub(temp, temp);
-        new_fiber->total_time = ktime_sub(temp, temp);
+        new_fiber->start_time = 0;
+        new_fiber->total_time = 0;
     }else{
         new_fiber->current_activations = 1;
-        new_fiber->start_time = ktime_get();
-        new_fiber->total_time = ktime_sub(temp, temp);
+        new_fiber->start_time = current->utime;
+        new_fiber->total_time = 0;
     }
     add_fiber(new_fiber);
 

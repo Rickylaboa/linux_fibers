@@ -44,9 +44,9 @@ struct fiber_struct{
     unsigned long status; // ACTIVE_FIBER (1) or INACTIVE_FIBER (0), running or not
     unsigned long current_activations; // number of successful activations
     unsigned long entry_point; // entry point address of the fiber (function to execute)
+    unsigned long start_time; // variable used to compute the total time
     unsigned long total_time; // total time in which the fiber has run
     atomic_t failed_activations; // number of failed activations
-    ktime_t start_time; // variable used to compute the total time
     long index; // the fiber index, unique within the process id
     long max_fls_index; // the max id the fiber local storage reached
     struct fls_list* free_fls_indexes; // the list of free fiber local storage indexes

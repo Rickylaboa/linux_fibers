@@ -2,8 +2,7 @@
 #include<pthread.h>
 #include<float.h>
 #include<sys/types.h>
-#include <userfibers.h>
-
+#include "../libs/userfibers.h"
 
 #define NUM_THREADS 2
 #define NUM 10
