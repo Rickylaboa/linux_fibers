@@ -43,8 +43,11 @@ struct fiber_mem_node *pop_fiber_list(){
 
 
 void open_device(){ 
-
-  fd = open("/dev/fibers", 0);
+  sem_wait(&fiber_sem);
+  if(fd < 0){
+    fd = open("/dev/fibers", 0);
+  }
+  sem_post(&fiber_sem);
   if(fd < 0){
     printf("Error in opening %s device\n", NAME);
 
@@ -54,9 +57,6 @@ void open_device(){
 
 long convert_thread_to_fiber(){
 
-  if(fd == -1 ){
-    open_device();
-  }
   long ret = ioctl(fd, IOCTL_CONVERT, 0);
 
   return ret;
@@ -65,19 +65,14 @@ long convert_thread_to_fiber(){
 
 long switch_to_fiber(long index){
 
-  if(fd == -1 ){
-    open_device();
-  }
   long ret = ioctl(fd, IOCTL_SWITCH, &index);
 
   return ret;
 }
 
 long create_fiber(size_t stack_size,void (*routine)(void *), void *args){
+
   long ret; 
-  if(fd == -1 ){
-    open_device();
-  }
   void *stack = aligned_alloc(16,stack_size);
   if(!stack){
     printf("Error in mmap() function\n");
@@ -98,9 +93,6 @@ long create_fiber(size_t stack_size,void (*routine)(void *), void *args){
 
 long _fls_alloc(){
 
-  if(fd == -1 ){
-    open_device();
-  }
   long ret = ioctl(fd, IOCTL_FLS_ALLOC, NULL);
 
   return ret;
@@ -108,9 +100,6 @@ long _fls_alloc(){
 
 int _fls_free(long index){
 
-  if(fd == -1 ){
-    open_device();
-  }
   long ret = ioctl(fd, IOCTL_FLS_FREE, &index);
 
   return ret;
@@ -119,9 +108,6 @@ int _fls_free(long index){
 void *_fls_get_value(long index){
   void *lret = 0;
   long ret = 0;
-  if(fd == -1 ){
-    open_device();
-  }
 
   struct fls_info fls = {
     .index = index,
@@ -134,9 +120,6 @@ void *_fls_get_value(long index){
 
 int _fls_set_value(long index, void *value){
 
-  if(fd == -1 ){
-    open_device();
-  }
 
   struct fls_info fls = {
     .index = index,
@@ -150,6 +133,9 @@ int _fls_set_value(long index, void *value){
 __attribute__((constructor)) void start (void)
 {
   sem_init(&fiber_sem,0,1);
+  if(fd == -1 ){
+    open_device();
+  }
 }
 
 
