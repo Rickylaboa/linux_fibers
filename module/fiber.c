@@ -5,25 +5,7 @@
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Fabio Marra <fab92mar@gmail.com> && Riccardo Valentini <valentiniriccardo05@gmail.com>");
 MODULE_DESCRIPTION("Kernel module implementing Windows fibers on Linux");
- 
 
-
-static struct file_operations fops = {
-
-  .owner = THIS_MODULE,      //macro for the current module
-  .open = hit_open,
-  .release = hit_release,
-  .unlocked_ioctl = hit_ioctl
-};
-
-
-static struct miscdevice mdev = {
-
-  .minor = MISC_DYNAMIC_MINOR,
-  .name = NAME,
-  .fops = &fops,
-  .mode = S_IALLUGO
-};
 
 int init_module(void){
 
@@ -76,14 +58,14 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
       return ret;
 
 		case IOCTL_CREATE: // Userspace requires to create a new fiber
-      nfib = (struct fiber_info*) kzalloc(sizeof(struct fiber_info), __GFP_HIGH);
+      nfib = (struct fiber_info *) kzalloc(sizeof(struct fiber_info), GFP_KERNEL);
       if(unlikely(!nfib)){
         printk(KERN_ERR "%s: error in kzalloc()\n", NAME);
 
         return -1;
       }
 
-      copy_from_user(nfib,(struct fiber_info*)ptr,sizeof(struct fiber_info));
+      copy_from_user(nfib, (struct fiber_info *)ptr, sizeof(struct fiber_info));
 			ret = fiber_create((unsigned long) nfib->routine, (unsigned long) nfib->stack, (unsigned long) nfib->args);
       //printk(KERN_INFO "%s: create\n",NAME);
       kfree(nfib);
@@ -91,14 +73,14 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
       return ret;
 		
     case IOCTL_SWITCH: // Userspace requires to switch from fiber x to fiber y
-      index = kzalloc(sizeof(long), __GFP_HIGH);
+      index = kzalloc(sizeof(long), GFP_KERNEL);
       if(unlikely(!index)){
         printk(KERN_ERR "%s: Error in kzalloc()\n", NAME);
 
         return -1;
       }
 
-      copy_from_user(index,(long *)ptr, sizeof(long));
+      copy_from_user(index, (long *)ptr, sizeof(long));
 			ret = fiber_switch(*index);
       //printk(KERN_INFO "%s: switch to %ld\n",NAME,(*index));
       kfree(index);
@@ -111,12 +93,12 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
       return ret;
 
     case IOCTL_FLS_FREE: // Userspace requires to switch from fiber x to fiber y
-      index = kzalloc(sizeof(long), __GFP_HIGH);
+      index = kzalloc(sizeof(long), GFP_KERNEL);
       if(unlikely(!index)){
         //printk(KERN_ERR "%s: Error in kzalloc()\n", NAME);
         return -1;
       }
-      copy_from_user(index,(long *)ptr, sizeof(long));
+      copy_from_user(index, (long *)ptr, sizeof(long));
       ret = fls_free(*index);
       //printk(KERN_INFO "%s: fls free\n",NAME);
       kfree(index);
@@ -124,30 +106,29 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
       return ret;
 
     case IOCTL_FLS_GET:
-      fls = kzalloc(sizeof(struct fls_info), __GFP_HIGH);
+      fls = kzalloc(sizeof(struct fls_info), GFP_KERNEL);
       if(unlikely(!fls)){
         printk(KERN_ERR "%s: Error in kzalloc()\n", NAME);
 
         return -1;
       }
-      copy_from_user((void*) fls,(void *)ptr, sizeof(struct fls_info));
+      copy_from_user((void *) fls,(void *)ptr, sizeof(struct fls_info));
       fls->value = fls_get_value(fls->index);
-      copy_to_user((void*) ptr, (void*) fls, sizeof(struct fls_info));
+      copy_to_user((void *) ptr, (void*) fls, sizeof(struct fls_info));
       kfree(fls);
 
       return 0;
 
     case IOCTL_FLS_SET:
-      fls = kzalloc(sizeof(struct fls_info), __GFP_HIGH);
+      fls = kzalloc(sizeof(struct fls_info), GFP_KERNEL);
       if(unlikely(!fls)){
         printk(KERN_ERR "%s: Error in kzalloc()\n", NAME);
 
         return -1;
       }
-      copy_from_user(fls,(long *)ptr, sizeof(struct fls_info));
+      copy_from_user(fls, (long *)ptr, sizeof(struct fls_info));
       //printk(KERN_INFO "%s: fls set\n",NAME);
       fls_set_value(fls->index,(void*) fls->value);
-  
       kfree(fls);
 
       return 0;
