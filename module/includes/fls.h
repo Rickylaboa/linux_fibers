@@ -2,7 +2,6 @@
 #define FLS_H
 
 #include<linux/hashtable.h>
-#include "fiber_struct.h"
 
 #define MAX_INDEX 1024
 
