@@ -124,7 +124,7 @@ inline long get_new_index(void){
     }
     // It means this is the first fiber of the process
     fresh_index = 0;
-    elem = kzalloc(sizeof(struct process_node), __GFP_HIGH);
+    elem = kzalloc(sizeof(struct process_node), GFP_KERNEL);
     if(unlikely(!elem)){
         printk(KERN_ERR "%s: error in kzalloc()\n", NAME);
         spin_unlock_irqrestore(&(pt.pt_lock), flags); // end of critical section
@@ -145,17 +145,17 @@ inline long get_new_index(void){
     fullfills it with the fields of a fiber. */
 extern struct fiber_struct *init_fiber(int status, int pid, int thread_running, long index, struct pt_regs regs){
 
-    struct fiber_struct* new_fiber;
-    struct fls_list* new_fls_list;
+    struct fiber_struct *new_fiber;
+    struct fls_list *new_fls_list;
     unsigned long ip;
-    new_fiber =  kzalloc(sizeof(struct fiber_struct), __GFP_HIGH);
+    new_fiber =  kzalloc(sizeof(struct fiber_struct), GFP_KERNEL);
     if(unlikely(!new_fiber)){
         printk(KERN_ERR "%s: error in kzalloc\n", NAME);
 
         return NULL;   
     }
 
-    new_fls_list  =  kzalloc(sizeof(struct fls_list), __GFP_HIGH);
+    new_fls_list  =  kzalloc(sizeof(struct fls_list), GFP_KERNEL);
     if(unlikely(!new_fls_list)){
         printk(KERN_ERR "%s: error in kzalloc\n", NAME);
 
@@ -187,7 +187,7 @@ inline long add_fiber(struct fiber_struct *f){
 
     long long key;
     unsigned long flags;
-    struct fiber_node *elem = kzalloc(sizeof(struct fiber_node), __GFP_HIGH);
+    struct fiber_node *elem = kzalloc(sizeof(struct fiber_node), GFP_KERNEL);
     if(unlikely(!elem)){
         printk(KERN_INFO "%s: error in kzalloc()\n", NAME);
 
@@ -208,7 +208,7 @@ inline int add_thread(int tid, long active_fiber_index){
 
     int key;
     unsigned long flags;
-    struct thread_node* elem = kzalloc(sizeof(struct thread_node), __GFP_HIGH);
+    struct thread_node* elem = kzalloc(sizeof(struct thread_node), GFP_KERNEL);
     if(unlikely(!elem)){
         printk(KERN_ERR "%s: error in kzalloc()\n", NAME);
 

@@ -100,22 +100,19 @@ struct thread_hash{
     DECLARE_HASHTABLE(thread_table, THREAD_BKT); // threads hashtable
 };
 
-extern struct fiber_struct* init_fiber(int status,int pid, int thread_running,long index,struct pt_regs regs);
-inline struct fiber_struct* get_fiber(long index);
-inline struct fiber_struct* get_fiber_pid(int pid,long index);
+extern struct fiber_struct *init_fiber(int status,int pid, int thread_running, long index, struct pt_regs regs);
+inline struct fiber_struct *get_fiber(long index);
+inline struct fiber_struct *get_fiber_pid(int pid, long index);
 inline long get_new_index(void);
 inline long current_fiber(void);
 inline long add_fiber(struct fiber_struct* f);
-inline void set_thread(int tid,long active_fiber_index);
-inline int add_thread(int tid,long active_fiber_index);
+inline void set_thread(int tid, long active_fiber_index);
+inline int add_thread(int tid, long active_fiber_index);
 inline int is_a_fiber(void);
-inline int process_has_fibers(int pid);
 inline int number_of_fibers(int pid);
 extern int register_exit_handler(void);
 extern int unregister_exit_handler(void);
 extern void init_hashtables(void);
-extern void remove_fiber(long index);
-extern void free_all_tables(void);
 int null_handler(void);
 int exit_handler(void);
 
