@@ -21,19 +21,19 @@
 #include<linux/hashtable.h>
 #include<linux/list.h>
 #include<linux/kprobes.h>
-#include"debug.h"
-#include"fls.h"
 #include<linux/proc_fs.h>
 #include<includes/proc.h>
 #include<linux/ktime.h>
 #include<linux/timekeeping.h>
 #include<asm/atomic.h>
+#include"constant.h"
+#include"debug.h"
+#include"fls.h"
 
 #define FIBER_BKT 8
 #define PROCESS_BKT 15
 #define THREAD_BKT 15
 #define MAX_FIBERS 10
-#define NAME "fibers"
 
 
 struct fiber_struct{
@@ -49,7 +49,7 @@ struct fiber_struct{
     atomic_t failed_activations; // number of failed activations
     long index; // the fiber index, unique within the process id
     long max_fls_index; // the max id the fiber local storage reached
-    struct fls_list* free_fls_indexes; // the list of free fiber local storage indexes
+    struct fls_list *free_fls_indexes; // the list of free fiber local storage indexes
     DECLARE_HASHTABLE(fls_table, 5); // the fiber local storage hashtable
     struct pt_regs registers; // CPU context of the fiber
     struct fpu fpu_registers; // FPU context of the fiber
@@ -100,12 +100,12 @@ struct thread_hash{
     DECLARE_HASHTABLE(thread_table, THREAD_BKT); // threads hashtable
 };
 
-extern struct fiber_struct *init_fiber(int status,int pid, int thread_running, long index, struct pt_regs regs);
+extern struct fiber_struct *init_fiber(int status, int pid, int thread_running, long index, struct pt_regs regs);
 inline struct fiber_struct *get_fiber(long index);
 inline struct fiber_struct *get_fiber_pid(int pid, long index);
 inline long get_new_index(void);
 inline long current_fiber(void);
-inline long add_fiber(struct fiber_struct* f);
+inline long add_fiber(struct fiber_struct *f);
 inline void set_thread(int tid, long active_fiber_index);
 inline int add_thread(int tid, long active_fiber_index);
 inline int is_a_fiber(void);
