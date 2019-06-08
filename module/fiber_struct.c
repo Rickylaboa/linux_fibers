@@ -51,12 +51,12 @@ inline long current_fiber(void){
     hash_for_each_possible(tt.thread_table, curr, list, key){
         if(curr->tid == key){
             long active_fiber_index = curr->active_fiber_index;
-            spin_unlock_irqrestore(&(tt.tt_lock), flags); // begin of critical section
+            spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of critical section
 
             return active_fiber_index;
         }
     }
-	spin_unlock_irqrestore(&(tt.tt_lock), flags); // begin of critical section
+	spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of critical section
     printk(KERN_ERR "%s: thread %d not found!\n", NAME, key);
 
     return -1;
@@ -86,8 +86,8 @@ inline int number_of_fibers(int pid){
 
 
 /*  This function provides a way to retrieve a fresh index
-    for a new fibers. It uses an hashmap for each process
-    using fibers. The key to access this map is the pid of
+    for new fibers. It uses an hashtable for each process
+    using fibers. The key to access this table is the pid of
     the process and there is a spinlock to access the hashtable. */
 inline long get_new_index(void){
 
@@ -100,7 +100,7 @@ inline long get_new_index(void){
     key = current->tgid; // the key in pt is the pid
 
     fresh_index = -1;
-    fiber_limit = (2<<MAX_FIBERS)-1;
+    fiber_limit = (2 << MAX_FIBERS) - 1;
 
 	spin_lock_irqsave(&(pt.pt_lock), flags); // begin of critical section
     hash_for_each_possible(pt.process_table, curr, list, key){
@@ -111,7 +111,7 @@ inline long get_new_index(void){
             {
                 fresh_index = -1;
                 spin_unlock_irqrestore(&(pt.pt_lock), flags);
-                printk(KERN_ERR "%s: critical error, MAX_FIBERS reached: %d!\n", NAME, fiber_limit);
+                printk(KERN_CRIT "%s: critical error, MAX_FIBERS reached: %d!\n", NAME, fiber_limit);
 
                 return fresh_index;
             }
