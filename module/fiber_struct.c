@@ -194,7 +194,7 @@ inline long add_fiber(struct fiber_struct *f){
         return -1;
     }
     elem->data = *f;
-    key = (long long) ((long long) f->pid << MAX_FIBERS) + f->index;
+    key = (long long) ((long long) f->pid << MAX_FIBERS) + f->index; 
 	spin_lock_irqsave(&(ft.ft_lock), flags); // begin of critical section
     hash_add(ft.fiber_table, &(elem->list), key);
     spin_unlock_irqrestore(&(ft.ft_lock), flags); // end of critical section
@@ -208,7 +208,7 @@ inline int add_thread(int tid, long active_fiber_index){
 
     int key;
     unsigned long flags;
-    struct thread_node* elem = kzalloc(sizeof(struct thread_node), GFP_KERNEL);
+    struct thread_node *elem = kzalloc(sizeof(struct thread_node), GFP_KERNEL);
     if(unlikely(!elem)){
         printk(KERN_ERR "%s: error in kzalloc()\n", NAME);
 
@@ -226,8 +226,7 @@ inline int add_thread(int tid, long active_fiber_index){
 }
 
 /*  This function sets a new active fiber index in a thread, if it exists
-    into the thread hashtable. It uses a spinlock to access the table and
-    returns 1 on success, 0 on failure*/
+    into the thread hashtable. It uses a spinlock to access the table */
 inline void set_thread(int tid, long active_fiber_index){
 
     int key;
