@@ -56,9 +56,8 @@ btest_1000:
 	done
 
 btest:
-	./benchmark/test 5
-	./benchmark/test 10
 	./benchmark/test 100
+	./benchmark/test 500
 	./benchmark/test 1000
 
 test1:
