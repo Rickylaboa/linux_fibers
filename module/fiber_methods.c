@@ -81,11 +81,13 @@ extern long fiber_switch(long index){
 
         return -1;
     }
+
+
+
     // I'm sure that only one thread will reach this point, so no need for spinlocks
-    test_and_clear_bit(INACTIVE_FIBER, &(curr_fiber->status));
 
     actual_time = current->utime;
-    slice = actual_time -  curr_fiber->start_time;
+    slice = actual_time - curr_fiber->start_time;
     curr_fiber->total_time += slice;
     next_fiber->start_time = actual_time;
 
@@ -100,6 +102,8 @@ extern long fiber_switch(long index){
     preempt_disable();
     fpu__restore(next_fpu_regs);
     preempt_enable();
+    
+    test_and_clear_bit(INACTIVE_FIBER, &(curr_fiber->status));
 
     set_thread(current->pid, index);
 
