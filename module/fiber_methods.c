@@ -5,7 +5,7 @@ spinlock_t info_lock;
 /* Function to create a new (inactive) fiber, initialized
     with the userspace data: ip( instruction pointer), 
     sp (stack pointer) and di. It calls fiber alloc*/
-extern long fiber_create(unsigned long ip, unsigned long sp){
+extern long fiber_create(unsigned long ip, unsigned long sp, unsigned long di){
     
     struct pt_regs regs;
     if(unlikely(!is_a_fiber())){
@@ -16,6 +16,7 @@ extern long fiber_create(unsigned long ip, unsigned long sp){
     regs = *task_pt_regs(current);
     regs.ip = ip;
     regs.sp = sp;
+    regs.di = di;
 
     return fiber_alloc(INACTIVE_FIBER, regs);
 }
