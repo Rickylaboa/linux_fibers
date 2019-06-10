@@ -26,39 +26,41 @@ clean:
 
 remove:
 	sudo rmmod fiber
-	
+
 insert:
 	sudo insmod fiber.ko
 
 btest_5:	
 	while true; do \
-    	./benchmark/test 5  ; \
+	./benchmark/test 5  ; \
 	done
 
 btest_50:	
 	while true; do \
-    	./benchmark/test 50  ; \
+	./benchmark/test 50  ; \
 	done
 
 btest_100:	
 	while true; do \
-    	./benchmark/test 100  ; \
+	./benchmark/test 100  ; \
 	done
 
 btest_500:	
 	while true; do \
-    	./benchmark/test 500  ; \
+	./benchmark/test 500  ; \
 	done
 
 btest_1000:	
 	while true; do \
-    	./benchmark/test 1000  ; \
+	./benchmark/test 1000  ; \
 	done
 
 btest:
-	./benchmark/test 100
-	./benchmark/test 500
-	./benchmark/test 1000
+	while true; do \
+	./benchmark/test 100 ; \
+	./benchmark/test 500 ; \
+	./benchmark/test 1000 ; \
+	done
 
 test1:
 	./usertest_1
