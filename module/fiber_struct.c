@@ -28,12 +28,12 @@ inline int is_a_fiber(void){
     hash_for_each_possible(tt.thread_table, curr, list, key){
 
         if(curr->tid == key){
-            spin_unlock_irqrestore(&(tt.tt_lock), flags); // begin of critical section
+            spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of critical section
 
             return 1;
         }
     }
-    spin_unlock_irqrestore(&(tt.tt_lock), flags); // begin of critical section
+    spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of critical section
 
     return 0;
 }
@@ -110,7 +110,7 @@ inline long get_new_index(void){
             if(curr->index >= fiber_limit) // check limit of fibers reached!
             {
                 fresh_index = -1;
-                spin_unlock_irqrestore(&(pt.pt_lock), flags);
+                spin_unlock_irqrestore(&(pt.pt_lock), flags);   // end of critical section
                 printk(KERN_CRIT "%s: critical error, MAX_FIBERS reached: %d!\n", NAME, fiber_limit);
 
                 return fresh_index;
@@ -344,7 +344,6 @@ static int fls_free_with_struct(struct fiber_struct *f){
 
     return 0;
 }
-
 
 
 /*  Function handler of do_exit, used to delete and free all memory
