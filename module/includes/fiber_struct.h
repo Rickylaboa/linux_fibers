@@ -27,7 +27,6 @@
 #include<linux/timekeeping.h>
 #include<asm/atomic.h>
 #include"constant.h"
-#include"debug.h"
 #include"fls.h"
 
 #define FIBER_BKT 8
