@@ -24,7 +24,7 @@ long fls_alloc(void){
         return -1;
     }
 
-    data = kzalloc(sizeof(struct fls_data), __GFP_HIGH);
+    data = kzalloc(sizeof(struct fls_data), GFP_KERNEL);
     if(unlikely(!data)){
         printk(KERN_ERR "%s: Error in kzalloc()\n", NAME);
         spin_unlock_irqrestore(&(fls_lock), fl);              //end of critical section
@@ -57,12 +57,12 @@ int fls_free(long index){
     struct fls_list *first;
     struct fls_data *data;
 
-    spin_lock_irqsave(&(fls_lock), fl);                   // begin of allfibers critical section
+    spin_lock_irqsave(&(fls_lock), fl);                   // begin of all fibers critical section
     if(f->max_fls_index == index){
         (f->max_fls_index)--;
     }
     else {
-        first = kzalloc(sizeof(struct fls_list), __GFP_HIGH);
+        first = kzalloc(sizeof(struct fls_list), GFP_KERNEL);
         if(unlikely(!first)){
             printk(KERN_ERR "%s: Error in kzalloc()\n", NAME);
             spin_unlock_irqrestore(&(fls_lock),fl);         //end of critical section
