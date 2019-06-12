@@ -31,13 +31,13 @@ void cleanup_module(void){
 }
 
 
-static int hit_open(struct inode *inode, struct file *file){    // to do...
+static int hit_open(struct inode *inode, struct file *file){    
 
   return 0;
 }
 
 
-static int hit_release(struct inode *inode, struct file *file){    // to do...
+static int hit_release(struct inode *inode, struct file *file){   
 
   return 0;
 }
@@ -114,7 +114,7 @@ static long hit_ioctl(struct file *filp, unsigned int cmd, unsigned long __user 
       }
       copy_from_user((void *) fls,(void *)ptr, sizeof(struct fls_info));
       fls->value = fls_get_value(fls->index);
-      copy_to_user((void *) ptr, (void*) fls, sizeof(struct fls_info));
+      copy_to_user((void *) ptr, (void *) fls, sizeof(struct fls_info));
       kfree(fls);
 
       return 0;
