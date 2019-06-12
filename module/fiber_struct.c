@@ -24,7 +24,7 @@ inline int is_a_fiber(void){
     unsigned long flags;
     
     key = current->pid;
-	spin_lock_irqsave(&(tt.tt_lock), flags); // begin of critical section
+    spin_lock_irqsave(&(tt.tt_lock), flags); // begin of critical section
     hash_for_each_possible(tt.thread_table, curr, list, key){
 
         if(curr->tid == key){
