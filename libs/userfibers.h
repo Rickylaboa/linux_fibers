@@ -43,6 +43,7 @@ struct fiber_mem_node *pop_fiber_list(){
 
 
 void open_device(){ 
+
   sem_wait(&fiber_sem);
   if(fd < 0){
     fd = open("/dev/fibers", 0);
@@ -80,6 +81,7 @@ long create_fiber(size_t stack_size,void (*routine)(void *), void *args){
     exit(EXIT_FAILURE);
   }
   struct fiber_info f_info = {
+
     .stack = (void *)(((unsigned long) stack) + stack_size - 8),   //16 byte alignement of the stack
     .routine = routine,
     .args = args
@@ -106,10 +108,12 @@ int _fls_free(long index){
 }
 
 void *_fls_get_value(long index){
+
   void *lret = 0;
   long ret = 0;
 
   struct fls_info fls = {
+
     .index = index,
     .value = NULL 
   };
@@ -122,6 +126,7 @@ int _fls_set_value(long index, void *value){
 
 
   struct fls_info fls = {
+    
     .index = index,
     .value = value
   };
