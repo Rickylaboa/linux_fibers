@@ -25,16 +25,13 @@
   */
 
 static unsigned long cr0;
-static struct pid_entry *tgid_base_stuff;
-static int (*proc_link)(struct dentry *, struct path *);
 static int (*_proc_tgid_base_readdir)(struct file *, struct dir_context *);
 static int (*proc_tgid_base_readdir)(struct file *, struct dir_context *);
-static struct dentry* (*proc_tgid_base_lookup)(struct inode *, struct dentry *, unsigned int);
+static struct dentry *(*proc_tgid_base_lookup)(struct inode *, struct dentry *, unsigned int);
 static int (*proc_pident_readdir)(struct file *, struct dir_context *, const struct pid_entry *, unsigned int);
-static struct dentry* (*proc_pident_lookup)(struct inode*, struct dentry*, const struct pid_entry*, unsigned int);
+static struct dentry *(*proc_pident_lookup)(struct inode *, struct dentry *, const struct pid_entry *, unsigned int);
 //static struct dentry *(*proc_pident_instantiate)(struct inode *dir, struct dentry *dentry, struct task_struct *task, const void *ptr);
 struct inode *(*proc_pid_make_inode)(struct super_block *sb, struct task_struct *task, umode_t mode);
-int *(*pid_revalidate)(struct dentry *dentry, unsigned int flags);
 void *(*task_dump_owner)(struct task_struct *task, umode_t mode, kuid_t *ruid, kgid_t *rgid);
 void *(*security_task_to_inode)(struct task_struct *p, struct inode *inode);
 
@@ -53,7 +50,7 @@ static inline void enable_protection(void)
 
 static inline void disable_protection(void)
 {
-    write_cr0(cr0 & ~0x00010000);
+    write_cr0(cr0 & ~X86_CR0_WP);     //Write Protect bit
 }
 
 static inline struct proc_inode *PROC_I(const struct inode *inode)
@@ -371,7 +368,6 @@ void proc_init(){
   cr0 = read_cr0();
   _proc_tgid_base_readdir = (void *) kallsyms_lookup_name("proc_tgid_base_readdir");
   proc_tgid_base_readdir = (void *) kallsyms_lookup_name("proc_tgid_base_readdir");
-  proc_link = (void *) kallsyms_lookup_name("proc_root_link");
   proc_tgid_base_lookup = (void *) kallsyms_lookup_name("proc_tgid_base_lookup");
   proc_pident_readdir = (void *) kallsyms_lookup_name("proc_pident_readdir");
   proc_pident_lookup = (void *) kallsyms_lookup_name("proc_pident_lookup");
@@ -381,7 +377,6 @@ void proc_init(){
   security_task_to_inode = (void *) kallsyms_lookup_name("security_task_to_inode");
 
   /* Lookup of proc tgid operations*/
-  tgid_base_stuff = (struct pid_entry *) kallsyms_lookup_name("tgid_base_stuff");
   pid_dentry_operations = (struct dentry_operations *) kallsyms_lookup_name("pid_dentry_operations");
   proc_tgid_base_operations = (struct file_operations *) kallsyms_lookup_name("proc_tgid_base_operations");
   proc_tgid_base_inode_operations = (struct inode_operations *) kallsyms_lookup_name("proc_tgid_base_inode_operations");
