@@ -33,7 +33,7 @@ extern long fiber_convert(void){
     fiber_index = fiber_alloc(ACTIVE_FIBER, regs);
     ret = add_thread(current->pid, fiber_index);
     if(unlikely(ret < 0)){
-        printk(KERN_ERR "%s: critical error, impossible to add current running thread!\n", NAME);
+        printk(KERN_CRIT "%s: critical error, impossible to add current running thread!\n", NAME);
     }
 
     return fiber_index;
@@ -65,13 +65,13 @@ extern long fiber_switch(long index){
     curr_fiber = get_fiber(current_index);
     next_fiber = get_fiber(index);
     if(unlikely(!curr_fiber)){
-        printk(KERN_ERR "%s: critical error, current fiber NULL\n", NAME);
+        printk(KERN_CRIT "%s: critical error, current fiber NULL\n", NAME);
         printk(KERN_ERR "%s: current fiber index: %ld\n", NAME, current_index);
 
         return -1;
     }
     if(unlikely(!next_fiber)){
-        printk(KERN_ERR "%s: critical error, next fiber NULL\n", NAME);
+        printk(KERN_CRIT "%s: critical error, next fiber NULL\n", NAME);
 
         return -1;    
     }
@@ -81,8 +81,6 @@ extern long fiber_switch(long index){
 
         return -1;
     }
-
-
 
     // I'm sure that only one thread will reach this point, so no need for spinlocks
 
@@ -104,7 +102,6 @@ extern long fiber_switch(long index){
     preempt_enable();
     
     test_and_clear_bit(INACTIVE_FIBER, &(curr_fiber->status));
-
     set_thread(current->pid, index);
 
     return 0;
