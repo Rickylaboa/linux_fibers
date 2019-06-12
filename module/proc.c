@@ -152,8 +152,8 @@ static struct dentry *proc_pident_instantiate(struct dentry *dentry,
 	inode = proc_pid_make_inode(dentry->d_sb, task, p->mode);
 	if (!inode){
 
-		return ERR_PTR(-ENOENT);
-  }
+	  return ERR_PTR(-ENOENT);
+	}
 
 	ei = PROC_I(inode);
 	if (S_ISDIR(inode->i_mode))
