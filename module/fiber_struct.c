@@ -47,7 +47,7 @@ inline long current_fiber(void){
     unsigned long flags;
 
     key = current->pid;
-	spin_lock_irqsave(&(tt.tt_lock), flags); // begin of critical section
+    spin_lock_irqsave(&(tt.tt_lock), flags); // begin of critical section
     hash_for_each_possible(tt.thread_table, curr, list, key){
         if(curr->tid == key){
             long active_fiber_index = curr->active_fiber_index;
@@ -56,7 +56,7 @@ inline long current_fiber(void){
             return active_fiber_index;
         }
     }
-	spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of critical section
+    spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of critical section
     printk(KERN_ERR "%s: thread %d not found!\n", NAME, key);
 
     return -1;
@@ -73,7 +73,7 @@ inline int number_of_fibers(int pid){
     key = pid; // the key in pt is the pid
 
     ret = 0;
-	spin_lock_irqsave(&(pt.pt_lock), flags); // begin of critical section
+    spin_lock_irqsave(&(pt.pt_lock), flags); // begin of critical section
     hash_for_each_possible(pt.process_table, curr, list, key){
         if(curr->pid == key){
             ret = curr->index;
@@ -102,7 +102,7 @@ inline long get_new_index(void){
     fresh_index = -1;
     fiber_limit = (2 << MAX_FIBERS) - 1;
 
-	spin_lock_irqsave(&(pt.pt_lock), flags); // begin of critical section
+    spin_lock_irqsave(&(pt.pt_lock), flags); // begin of critical section
     hash_for_each_possible(pt.process_table, curr, list, key){
 
         if(curr->pid == key){
@@ -195,7 +195,7 @@ inline long add_fiber(struct fiber_struct *f){
     }
     elem->data = *f;
     key = (long long) ((long long) f->pid << MAX_FIBERS) + f->index; 
-	spin_lock_irqsave(&(ft.ft_lock), flags); // begin of critical section
+    spin_lock_irqsave(&(ft.ft_lock), flags); // begin of critical section
     hash_add(ft.fiber_table, &(elem->list), key);
     spin_unlock_irqrestore(&(ft.ft_lock), flags); // end of critical section
 
@@ -218,7 +218,7 @@ inline int add_thread(int tid, long active_fiber_index){
     elem->tid = tid;
     elem->active_fiber_index = active_fiber_index;
     key = tid;
-	spin_lock_irqsave(&(tt.tt_lock), flags); // begin of critical section
+    spin_lock_irqsave(&(tt.tt_lock), flags); // begin of critical section
     hash_add(tt.thread_table, &(elem->list), key);
     spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of critical section
 
@@ -235,7 +235,7 @@ inline void set_thread(int tid, long active_fiber_index){
     unsigned long flags;
     key = current->pid;
     selected = NULL; 
-	spin_lock_irqsave(&(tt.tt_lock), flags); // begin of critical section
+    spin_lock_irqsave(&(tt.tt_lock), flags); // begin of critical section
     hash_for_each_possible(tt.thread_table, curr, list, key){
         if(curr->tid == key){
             selected = curr;
@@ -364,9 +364,9 @@ int exit_handler(void){
     k = 0;
     h = 0;
 
-	spin_lock_irqsave(&(tt.tt_lock), flags); // begin of critical section
-	spin_lock_irqsave(&(ft.ft_lock), flags); // begin of critical section
-	spin_lock_irqsave(&(pt.pt_lock), flags); // begin of critical section
+    spin_lock_irqsave(&(tt.tt_lock), flags); // begin of critical section
+    spin_lock_irqsave(&(ft.ft_lock), flags); // begin of critical section
+    spin_lock_irqsave(&(pt.pt_lock), flags); // begin of critical section
     hash_for_each_possible(pt.process_table, curr1, list, pid){
         if(curr1->pid == pid)
         {
@@ -397,9 +397,9 @@ int exit_handler(void){
             k++;
         }
     }
-	spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of critical section
+    spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of critical section
     spin_unlock_irqrestore(&(ft.ft_lock), flags); // end of critical section
-	spin_unlock_irqrestore(&(pt.pt_lock), flags); // end of critical section
+    spin_unlock_irqrestore(&(pt.pt_lock), flags); // end of critical section
 
     return 0;
 }
