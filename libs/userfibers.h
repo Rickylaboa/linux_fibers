@@ -71,12 +71,12 @@ long switch_to_fiber(long index){
   return ret;
 }
 
-long create_fiber(size_t stack_size,void (*routine)(void *), void *args){
+long create_fiber(size_t stack_size, void (*routine)(void *), void *args){
 
   long ret; 
-  void *stack = aligned_alloc(16,stack_size);
+  void *stack = aligned_alloc(16, stack_size);
   if(!stack){
-    printf("Error in mmap() function\n");
+    printf("Error in aligned_alloc() function\n");
 
     exit(EXIT_FAILURE);
   }
