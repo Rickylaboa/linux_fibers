@@ -356,13 +356,9 @@ int exit_handler(void){
     struct thread_node *curr3;
     int bkt2, bkt3, pid, d;
     unsigned long flags;
-    int i, j, k, h;
     pid = current->tgid;
     d = 1;
-    i = 0;
-    j = 0;
-    k = 0;
-    h = 0;
+
 
     spin_lock_irqsave(&(tt.tt_lock), flags); // begin of critical section
     spin_lock_irqsave(&(ft.ft_lock), flags); // begin of critical section
@@ -372,7 +368,6 @@ int exit_handler(void){
         {
             hash_del(&(curr1->list));
             kfree(curr1);
-            i++;
         }
     } 
 
@@ -382,7 +377,6 @@ int exit_handler(void){
         hash_for_each(ft.fiber_table, bkt2, curr2, list){
             if(curr2->data.pid == pid){
                 hash_del(&(curr2->list));
-                j++;
                 d++;
                 fls_free_with_struct(&(curr2->data));
                 kfree(curr2);
@@ -394,7 +388,6 @@ int exit_handler(void){
         if(curr3->pid == pid){
             hash_del(&(curr3->list));
             kfree(curr3);
-            k++;
         }
     }
     spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of critical section
