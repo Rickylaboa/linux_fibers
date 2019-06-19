@@ -117,8 +117,8 @@ static int fibered_file_open(struct inode *inode, struct file *file){
   if(!fiber){
     printk("Null pointer\n");
   }
-  res = single_open(file, show_fiber_file, fiber);
-
+  res = single_open(file, show_fiber_file, fiber);  //put the fiber_struct in the private field of the seqfile
+                                                    //and sets the show operation as show_fiber_file
   return res;
 }
 
@@ -181,7 +181,7 @@ static int fibers_folder_readdir(struct file *file, struct dir_context *ctx) {
   struct pid_entry *entries;
 
   long unsigned int pid;
-  pid_s = file->f_path.dentry->d_parent->d_iname;
+  pid_s = file->f_path.dentry->d_parent->d_iname;  //get the string representing the pid
 
   res = kstrtoul(pid_s, 10, &pid);
   if(res != 0){
@@ -238,9 +238,9 @@ static struct dentry *fibers_folder_lookup(struct inode *dir, struct dentry *den
   char *name;
   struct pid_entry *entries;
 
-  actual_d = container_of(dir->i_dentry.first, struct dentry, d_u.d_alias);
+  actual_d = container_of(dir->i_dentry.first, struct dentry, d_u.d_alias);     //extract dentry from inode
   parent_d = actual_d-> d_parent;
-  pid_s = parent_d-> d_iname; 
+  pid_s = parent_d-> d_iname;  //string representing the pid
 
   res = kstrtoul(pid_s, 10, &pid);
   if(res != 0){
@@ -271,7 +271,7 @@ static struct dentry *fibers_folder_lookup(struct inode *dir, struct dentry *den
     entries[i].iop = &f_proc_iops;
     entries[i].fop = &f_proc_ops;
   }
-  ret = proc_pident_lookup(dir, dentry,entries, size);
+  ret = proc_pident_lookup(dir, dentry, entries, size); // instantiate all the entries
   for(i = 0; i < size; i++)
   {
     kfree(entries[i].name);
@@ -301,7 +301,7 @@ static const struct pid_entry fiber_base_stuff[] = {
 
 /* Function allowing the reading of the /proc/[pid] directory, replacing
   proc_tgid_base_readdir, in order to show also the /fibers folder if present.*/
-static int f_proc_tgid_base_readdir(struct file *file, struct dir_context *ctx){
+static int f_proc_readdir(struct file *file, struct dir_context *ctx){
 
   struct inode *dir;
   struct task_struct *task;
@@ -331,14 +331,14 @@ static struct dentry *f_proc_pident_lookup(struct inode *dir, struct dentry *den
   int pid;
   int num_fibers;
 
-	if (!task){
+	if (!task){         //check the task is active
 
      return res;
   }
   pid = task->tgid;
   num_fibers = number_of_fibers(pid);
   if(num_fibers > 0){
-    if (!memcmp(dentry->d_name.name, p->name, p->len)) {
+    if (!memcmp(dentry->d_name.name, p->name, p->len)) {  // if (memcmp == 0)
 			res = proc_pident_instantiate(dentry, task, p);
 		}
   }
@@ -385,7 +385,7 @@ void proc_init(){
 
   disable_protection();
   proc_tgid_base_inode_operations->lookup = f_proc_lookup;
-  proc_tgid_base_operations->iterate_shared = f_proc_tgid_base_readdir;
+  proc_tgid_base_operations->iterate_shared = f_proc_readdir;
   enable_protection();
 }
 
