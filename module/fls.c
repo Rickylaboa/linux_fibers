@@ -36,7 +36,7 @@ long fls_alloc(void){
     }
     else{
         index = first->index;
-        list_del(&(first->list));
+        list_del(&(first->list));  //remove from free indexes list
         kfree(first);
     }
     data->index = index; 
@@ -70,9 +70,9 @@ int fls_free(long index){
             return -1;
         }
         first->index = index;
-        list_add(&(first->list), &(f->free_fls_indexes->list));
+        list_add(&(first->list), &(f->free_fls_indexes->list));  //add to the free indexes list
     }
-    hash_for_each_possible(f->fls_table, data, list, index){
+    hash_for_each_possible(f->fls_table, data, list, index){  //remove from the fls hashtable
         if(data->index == index){
             hash_del(&(data->list));
             kfree(data);

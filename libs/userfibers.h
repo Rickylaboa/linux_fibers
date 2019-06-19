@@ -82,7 +82,7 @@ long create_fiber(size_t stack_size, void (*routine)(void *), void *args){
   }
   struct fiber_info f_info = {
 
-    .stack = (void *)(((unsigned long) stack) + stack_size - 8),   //16 byte alignement of the stack
+    .stack = (void *)(((unsigned long) stack) + stack_size - 8),   //alignement of the stack
     .routine = routine,
     .args = args
   };
@@ -95,7 +95,7 @@ long create_fiber(size_t stack_size, void (*routine)(void *), void *args){
 
 long _fls_alloc(){
 
-  long ret = ioctl(fd, IOCTL_FLS_ALLOC, NULL);
+  long ret = ioctl(fd, IOCTL_FLS_ALLOC);
 
   return ret;
 }
