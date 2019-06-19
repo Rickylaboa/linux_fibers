@@ -146,7 +146,6 @@ __attribute__((constructor)) void start (void)
 
 __attribute__((destructor)) void end (void)
 {
-  int i = 0;
   close(fd);
   while(list != NULL)
   {
@@ -154,7 +153,6 @@ __attribute__((destructor)) void end (void)
     f = pop_fiber_list();
     free(f->stack);
     free(f);
-    i++;
   }
 }
 
