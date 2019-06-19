@@ -384,12 +384,18 @@ int exit_handler(void){
         }
     }
 
-    hash_for_each(tt.thread_table, bkt3, curr3, list){
-        if(curr3->pid == pid){
-            hash_del(&(curr3->list));
-            kfree(curr3);
+    while(d > 0)
+    {
+        d = 0;
+        hash_for_each(tt.thread_table, bkt3, curr3, list){
+            if(curr3->pid == pid){
+               hash_del(&(curr3->list));
+               d++;
+               kfree(curr3);
+            }
         }
     }
+
     spin_unlock_irqrestore(&(tt.tt_lock), flags); // end of critical section
     spin_unlock_irqrestore(&(ft.ft_lock), flags); // end of critical section
     spin_unlock_irqrestore(&(pt.pt_lock), flags); // end of critical section
