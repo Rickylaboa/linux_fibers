@@ -330,16 +330,26 @@ static int fls_free_with_struct(struct fiber_struct *f){
 
     struct fls_list *first;
     struct fls_data *data;
-    int bkt;
-    hash_for_each(f->fls_table, bkt, data, list){
+    int bkt, d;
+    d = 1;
+    
     first = list_first_entry_or_null(&(f->free_fls_indexes->list), struct fls_list, list);
-        while(first != NULL)
-        {
-            list_del(&(first->list));
-            kfree(first);
-            first = list_first_entry_or_null(&(f->free_fls_indexes->list), struct fls_list, list);
+    while(first != NULL)
+    {
+        list_del(&(first->list));
+        kfree(first);
+        first = list_first_entry_or_null(&(f->free_fls_indexes->list), struct fls_list, list);
+    }
+
+    while(d > 0)
+    {
+        d = 0;
+        hash_for_each(f->fls_table, bkt, data, list){
+            hash_del(&(data->list));
+            d++;
+            kfree(data);
         }
-        kfree(data);
+ 
     }
 
     return 0;
@@ -384,6 +394,7 @@ int exit_handler(void){
         }
     }
 
+    d = 1;
     while(d > 0)
     {
         d = 0;
