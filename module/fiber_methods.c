@@ -75,7 +75,7 @@ extern long fiber_switch(long index){
 
         return -1;    
     }
-    next_status = test_and_set_bit(INACTIVE_FIBER, &(next_fiber->status));
+    next_status = test_and_set_bit(INACTIVE_FIBER, &(next_fiber->status));  //check if next fiber is already active
     if(next_status == ACTIVE_FIBER){
         atomic_inc(&(next_fiber->failed_activations));
 
@@ -121,13 +121,13 @@ extern long fiber_alloc(int status, struct pt_regs regs){
         return -1;
     }
     new_fiber = init_fiber(status, (current->tgid), (current->pid), fiber_index, regs);
-    if(status == INACTIVE_FIBER){
+    if(status == INACTIVE_FIBER){ // create
         preempt_disable();
         fpu__initialize(&(new_fiber->fpu_registers));
         preempt_enable();
         new_fiber->start_time = 0;
         new_fiber->total_time = 0;
-    }else{
+    }else{                              //convert
         new_fiber->current_activations = 1;
         new_fiber->start_time = current->utime;
         new_fiber->total_time = 0;
